@@ -1,0 +1,14 @@
+/* traffic police styles */
+@media (max-width: 576px) {
+    .response-message,
+    .response-errors {
+      font-size: 0.7rem; 
+    }
+  }
+  .response-message {
+    font-size: 0.8rem; 
+  }
+  
+  .response-errors {
+    font-size: 0.8rem;
+  }

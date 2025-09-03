@@ -1,0 +1,294 @@
+* {
+    margin: 0;
+    padding: 0;
+    font-family: "Poppins", sans-serif;
+  }
+  body {
+    background-color: #b6cffb;
+  }
+  .DriverPortal{
+    background-color: #B6CFFD;
+  }
+  .navbars {
+    position: fixed;
+    width: 100%;
+  }
+  .nav-bar {
+    display: flex;
+    background-color: white;
+    justify-content: space-between;
+    box-shadow: rgba(0, 0, 0, 0.19) 0px 10px 20px, rgba(0, 0, 0, 0.23) 0px 6px 6px;
+  }
+  .navbar h2 {
+    display: inline-flex;
+    align-items: center;
+  }
+  .nav-bar .navbarlinks {
+    display: inline-flex;
+    justify-content: space-between;
+    column-gap: 10px;
+    margin: 0;
+    padding: 0;
+  }
+  .navbarlink a {
+    text-decoration: none;
+    color: black;
+    padding: 2%;
+  }
+  .navbarlink a:hover {
+    background-color: #8888ff;
+    border-radius: 5px;
+    color: white;
+  }
+  .profile-img-link:hover {
+  background-color: transparent !important;
+  color: inherit !important;
+}
+
+  #toggle-menu {
+    background-color: lightgray;
+    font-size: larger;
+    border-radius: 10px;
+    height: fit-content;
+  }
+  #toggle-menu button {
+    border: none;
+    padding: 5px;
+    border-radius: 10px;
+  }
+  
+  #toggle-menu button:focus {
+    background-color: #6d6dff;
+    border-radius: 10px;
+    color: white;
+  }
+  #btn-1 {
+    background-color: #6d6dff;
+    color: white;
+  }
+  #btn-2 {
+    background-color: lightgray;
+  }
+
+  .dashboard .col-3.align-items-left {
+    margin-top: 4%;
+  }
+
+
+
+  .header {
+    top: 0;
+    z-index: 1020;
+  }
+  
+
+  .sidebar {
+    margin: 2px;
+    padding: 2%;
+    background-color: #fff; /* Optional: background color for contrast */
+  }
+  
+
+  .sidebar-links {
+    padding: 15px 12px;
+    margin: 2px 0;
+    display: flex;
+    align-items: center;
+    border-radius: 6px;
+    cursor: pointer;
+    white-space: nowrap;       /* Prevents text from wrapping */
+    overflow: hidden;          /* Hides overflow text */
+    text-overflow: ellipsis;   /* Adds ... if too long */
+  }
+  
+  .sidebar-links a {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    color: #222121;
+    gap: 10px;
+    width: 100%;
+    white-space: nowrap;       /* Also here to enforce no wrapping */
+  }
+  /* Align icon and text with spacing */
+  .sidebar-links div {
+    display: flex;
+    align-items: center;
+    gap: 10px; /* Space between icon and text */
+  }
+  
+  /* Hover effects */
+  .sidebar-links:hover {
+    background-color: rgba(42, 42, 183, 0.09);
+    border-left: 4px solid #5757c2;
+    padding-left: 8px;
+  }
+  
+  .sidebar-links:hover a {
+    color: #5757c2;
+  }
+
+  .sidebar-wrapper {
+    width: 220px;
+    background-color: #fff;
+  }
+  /* Overlay styles for mobile */
+.sidebar-overlay {
+  display: none;
+}
+
+.sidebar-overlay.show {
+  display: block;
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  width: 100%;
+  background-color: rgba(0,0,0,0.3);
+  z-index: 999;
+}
+
+.sidebar-mobile {
+  width: 250px;
+  height: 100%;
+  background-color: #fff;
+  padding: 1rem;
+  overflow-y: auto;
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 1000;
+  transition: all 0.3s ease-in-out;
+}
+
+/* Close button style */
+.close-btn {
+  background: transparent;
+  border: none;
+  font-size: 28px;
+  position: visible;
+  margin-left: 35%;
+  top: 12px;
+  cursor: pointer;
+}
+
+/* Only show overlay on small screens */
+@media (min-width: 768px) {
+  .sidebar-overlay {
+    display: none !important;
+  }
+}
+
+  
+  #Message {
+    width: 40px;
+    height: 25px;
+    background-color: #ff6464;
+    color: white;
+    text-align: center;
+    display: inline-block;
+    border-radius: 5px;
+    box-shadow: rgba(0, 0, 0, 0.19) 0px 10px 20px, rgba(0, 0, 0, 0.23) 0px 6px 6px;
+  }
+  .tag-1 p {
+    width: 130px;
+    border-radius: 5px;
+    display: inline-block;
+    margin-top: 5px;
+  }
+  .tag-2 p {
+    display: inline-block;
+    cursor: pointer;
+  }
+  .overview.bg-white.d-block.p-4 {
+    width: 80%;
+    border-radius: 15px;
+    box-shadow: rgba(0, 0, 0, 0.19) 0px 10px 20px, rgba(0, 0, 0, 0.23) 0px 6px 6px;
+  }
+  .overview.bg-white.d-block.p-4 p {
+    background-color: #d9e4f6;
+    width: 650px;
+    display: inline-flex;
+    border-radius: 8px;
+  }
+  .overview.bg-white.d-block.p-4 button {
+    border: none;
+    background-color: #2f2f4f;
+    color: white;
+    border-radius: 5px;
+  }
+  .payment.bg-white.d-block {
+    background-color: #b6cffb;
+  }
+  .payment.bg-white.d-inline-flex {
+    width: 80%;
+    height: auto;
+    border-radius: 15px;
+    box-shadow: rgba(0, 0, 0, 0.19) 0px 10px 20px, rgba(0, 0, 0, 0.23) 0px 6px 6px;
+    padding: 10px;
+  }
+  #payment {
+    background-color: #d9e4f6;
+    border-radius: 15px;
+    padding: 20px 20px;
+  }
+  #payment p {
+    background-color: white;
+    width: 330px;
+    border-radius: 8px;
+  }
+  #notification {
+    background-color: #d9e4f6;
+    padding: 20px 20px;
+    border-radius: 15px;
+  }
+  #notification p {
+    background-color: white;
+    width: 330px;
+    border-radius: 8px;
+  }
+  #quickbar {
+    background-color: rgba(7, 6, 6, 0.2);
+    display: flex;
+    padding: 2%;
+    width: 100%;
+    margin-top: 9%;
+    margin-bottom: 10%;
+    box-shadow: rgba(0, 0, 0, 0.19) 0px 10px 20px, rgba(0, 0, 0, 0.23) 0px 6px 6px;
+    border-radius: 15px;
+    
+  }
+  #quickbar h2 {
+    background-color: #000032;
+    color: white;
+    border-radius: 10px;
+    padding: 5px 15px;
+    margin-bottom: 25px;
+  }
+  .action.d-inline-flex {
+    background: radial-gradient(
+      circle at center,
+      #ffffff,
+      rgba(223, 234, 253, 0.6),
+      #cadcfc
+    );
+    width: 200px;
+    height: 120px;
+    text-align: center;
+    justify-content: center;
+    align-items: center;
+    border-radius: 15px;
+    border: none;
+  }
+  #row-1 {
+    margin-bottom: 5%;
+  }
+  .d-block {
+    display: block;
+  }
+  .d-block .row {
+    text-align: center;
+    justify-content: center;
+    align-items: center;
+  }
+  
