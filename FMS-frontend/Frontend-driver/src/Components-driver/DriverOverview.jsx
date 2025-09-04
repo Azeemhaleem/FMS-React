@@ -203,13 +203,13 @@ export default function DriverOverview() {
       <div style={cardStyle} className="p-3 p-sm-4 mb-4">
         <div className="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-2">
           <h4 className="fw-bold m-0">Overview Fines</h4>
-          <button
-            className="btn btn-sm btn-outline-secondary w-25 ms-auto"
+          {/* <button
+            className="btn btn-sm btn-secondary w-25 ms-auto"
             disabled={!canPayAll}
             onClick={() => setShowConfirm(true)}
           >
             Pay all
-          </button>
+          </button> */}
         </div>
 
         {pageError && <div className="alert alert-danger py-2 mb-3">{pageError}</div>}
@@ -240,7 +240,7 @@ export default function DriverOverview() {
                 <div className="d-flex align-items-center gap-2">
                   <span className="badge text-bg-light border small">{money(f.amount)}</span>
                   <button
-                    className="btn btn-sm btn-dark ms-auto"
+                    className="btn btn-sm btn-outline-primary ms-auto"
                     onClick={() => payOne(f.id)}
                     disabled={payingId === f.id}
                     aria-label={`Pay fine ${f.id}`}
@@ -254,12 +254,19 @@ export default function DriverOverview() {
           </ul>
         )}
 
-        <div className="mt-3">
+        <div className="d-flex justify-content-between flex-wrap gap-2 mb-2 mt-3">
           <button
-            className="btn btn-sm btn-outline-secondary ms-auto w-25"
+            className="btn btn-sm btn-primary w-25"
             onClick={() => navigate("/DriverMyFines")}
           >
             View all fines
+          </button>
+          <button
+            className="btn btn-sm btn-primary w-25 ms-auto"
+            disabled={!canPayAll}
+            onClick={() => setShowConfirm(true)}
+          >
+            Pay all
           </button>
         </div>
       </div>
