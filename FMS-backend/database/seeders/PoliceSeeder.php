@@ -67,7 +67,7 @@ class PoliceSeeder extends Seeder
 
         DB::table('police_users')->insert([
             'username' => 'superadmin1',
-            'password' => Hash::make('password'),
+            'password' => Hash::make('Password1@'),
             'email' => 'superadmin1@email.com',
             'email_verified_at' => now(),
             'role_id' => Roles::where('name', 'admin')->first()->id,
@@ -84,7 +84,7 @@ class PoliceSeeder extends Seeder
 
         DB::table('police_users')->insert([
             'username' => 'admin1',
-            'password' => Hash::make('password'),
+            'password' => Hash::make('Password1@'),
             'email' => 'admin1@email.com',
             'email_verified_at' => now(),
             'role_id' => Roles::where('name', 'admin')->first()->id,
@@ -101,7 +101,7 @@ class PoliceSeeder extends Seeder
 
         DB::table('police_users')->insert([
             'username' => 'admin2',
-            'password' => Hash::make('password'),
+            'password' => Hash::make('Password1@'),
             'email' => 'admin2@email.com',
             'email_verified_at' => now(),
             'role_id' => Roles::where('name', 'admin')->first()->id,
@@ -118,7 +118,7 @@ class PoliceSeeder extends Seeder
 
         DB::table('police_users')->insert([
             'username' => 'superadmin2',
-            'password' => Hash::make('password'),
+            'password' => Hash::make('Password1@'),
             'email' => 'superadmin2@email.com',
             'email_verified_at' => now(),
             'role_id' => Roles::where('name', 'admin')->first()->id,
@@ -135,7 +135,7 @@ class PoliceSeeder extends Seeder
 
         DB::table('police_users')->insert([
             'username' => 'higherofficer1',
-            'password' => Hash::make('password'),
+            'password' => Hash::make('Password1@'),
             'email' => 'higherofficer1@email.com',
             'email_verified_at' => now(),
             'role_id' => Roles::where('name', 'higher_officer')->first()->id,
@@ -151,7 +151,7 @@ class PoliceSeeder extends Seeder
 
         DB::table('police_users')->insert([
             'username' => 'higherofficer2',
-            'password' => Hash::make('password'),
+            'password' => Hash::make('Password1@'),
             'email' => 'higherofficer2@email.com',
             'email_verified_at' => now(),
             'role_id' => Roles::where('name', 'higher_officer')->first()->id,
@@ -167,7 +167,7 @@ class PoliceSeeder extends Seeder
 
         DB::table('police_users')->insert([
             'username' => 'trafficpolice1',
-            'password' => Hash::make('password'),
+            'password' => Hash::make('Password1@'),
             'email' => 'trafficpolice1@email.com',
             'email_verified_at' => now(),
             'role_id' => Roles::where('name', 'traffic_officer')->first()->id,
@@ -187,7 +187,7 @@ class PoliceSeeder extends Seeder
 
         DB::table('police_users')->insert([
             'username' => 'trafficpolice2',
-            'password' => Hash::make('password'),
+            'password' => Hash::make('Password1@'),
             'email' => 'trafficpolice2@email.com',
             'email_verified_at' => now(),
             'role_id' => Roles::where('name', 'traffic_officer')->first()->id,
@@ -207,7 +207,7 @@ class PoliceSeeder extends Seeder
 
         DB::table('police_users')->insert([
             'username' => 'trafficpolice3',
-            'password' => Hash::make('password'),
+            'password' => Hash::make('Password1@'),
             'email' => 'trafficpolice3@email.com',
             'email_verified_at' => now(),
             'role_id' => Roles::where('name', 'traffic_officer')->first()->id,
