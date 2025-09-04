@@ -282,3 +282,9 @@ col.check-col {           /* targets the <col> element */
 
 /* Optional: card background used in this page */
 .card-softgradient { background: linear-gradient(135deg, #d9eaff 0%, #ffffff 100%); }
+
+.card-softgradient { background: linear-gradient(135deg, #d9eaff 0%, #ffffff 100%); }
+.table-fixed { table-layout: fixed; width: 100%; }
+.nowrap { white-space: nowrap; }
+.truncate { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
