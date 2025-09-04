@@ -38,10 +38,10 @@ const Login = () => {
             password: Yup.string()
                 .min(8, 'Password must be at least 8 characters')
                 .required('Password is required')
-                // .matches(/[A-Z]/, 'Must contain uppercase')
-                // .matches(/[a-z]/, 'Must contain lowercase')
-                // .matches(/[0-9]/, 'Must contain number')
-                // .matches(/[@$!%*?&]/, 'Must contain special character')
+                .matches(/[A-Z]/, 'Must contain uppercase')
+                .matches(/[a-z]/, 'Must contain lowercase')
+                .matches(/[0-9]/, 'Must contain number')
+                .matches(/[@$!%*?&]/, 'Must contain special character')
                 .test("not-same-as-old", "New password must be different from the old one", function (value) {
                     const { selectedUser } = this.options.context;
                     return value !== selectedUser?.password;
