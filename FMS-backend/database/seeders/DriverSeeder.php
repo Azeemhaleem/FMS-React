@@ -22,21 +22,25 @@ class DriverSeeder extends Seeder
             'license_no' => '1111',
             'full_name' => 'Driver 1',
             'email' => 'driver1@email.com',
+            'licence_id_no' => 'BC112555',
         ]);
         DB::table('driver_in_depts')->insert([
             'license_no' => '2222',
             'full_name' => 'Driver 2',
             'email' => 'driver2@email.com',
+            'licence_id_no' => 'BC112556',
         ]);
         DB::table('driver_in_depts')->insert([
             'license_no' => '3333',
             'full_name' => 'Driver 3',
             'email' => 'driver3@email.com',
+            'licence_id_no' => 'BC112557',
         ]);
         DB::table('driver_in_depts')->insert([
             'license_no' => '4444',
             'full_name' => 'Driver 4',
             'email' => 'driver4@email.com',
+            'licence_id_no' => 'BC112558',
         ]);
 
         DB::table('driver_users')->insert([

@@ -20,7 +20,7 @@ class RegistrationController extends Controller
         $messege = $request->validate([
             'username' => 'bail|required|max:50|unique:driver_users|unique:police_users',
             'password' => 'required|max:50|confirmed',
-            'license_number' => 'required|max:10|exists:driver_in_depts,license_no'
+            'license_number' => 'required|max:50|exists:driver_in_depts,license_no'
         ]);
         $driverInDept = driverInDept::where('license_no', $messege['license_number'])->first();
         $driverUser = DriverUser::create([

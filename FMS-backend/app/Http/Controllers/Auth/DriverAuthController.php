@@ -121,7 +121,8 @@ public function login(Request $request) {
         $driverInDept = $user->driverInDept;
         return response()->json([
             'full_name' => $driverInDept->full_name,
-            'license_number' => $driverInDept->license_no,
+            'license_number' => $driverInDept->licence_id_no,
+            'license_issued_date' => $driverInDept->license_issued_date,
             'license_expiry_date' => $driverInDept->license_expiry_date
         ]);
     }
