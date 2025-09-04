@@ -7,7 +7,6 @@ const PrivateRoute = ({ children }) => {
     return token ? children : <Navigate to="/login" />;
 };
 
-// ✅ Add propTypes validation
 PrivateRoute.propTypes = {
     children: PropTypes.node.isRequired,
 };
