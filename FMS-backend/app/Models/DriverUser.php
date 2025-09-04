@@ -49,14 +49,15 @@ class DriverUser extends Model implements CanResetPasswordContract
         $this->notify(new DriverResetPasswordNotification($token));
     }
 
-    public function routeNotificationForMail($notification): string
-    { 
+    public function routeNotificationForMail($notification): ?string
+    {
         if ($this->receives_email_notifications) {
             return $this->getEmailForPasswordReset();
         }
 
         return null;
     }
+
 
     public function chargedFines()
     {
