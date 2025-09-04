@@ -259,7 +259,26 @@ label:hover .overlay-hover {
         bottom: 10% !important;
         right: 33% !important;
     }
-    .list-group-item { padding-top: .5rem; padding-bottom: .5rem; }
-    .badge.text-bg-light { background-color: #f8f9fa; }
 
 }
+/* ---- Payment table layout (applies on all screen sizes) ---- */
+.table-fixed {
+  table-layout: fixed;
+  width: 100%;
+}
+
+/* Make the checkbox column tiny */
+col.check-col {           /* targets the <col> element */
+  width: 28px !important;
+}
+
+
+
+.check-col input[type="checkbox"] {
+  display: block;
+  margin: 0 auto;
+}
+
+
+/* Optional: card background used in this page */
+.card-softgradient { background: linear-gradient(135deg, #d9eaff 0%, #ffffff 100%); }
