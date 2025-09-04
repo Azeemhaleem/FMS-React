@@ -259,4 +259,7 @@ label:hover .overlay-hover {
         bottom: 10% !important;
         right: 33% !important;
     }
+    .list-group-item { padding-top: .5rem; padding-bottom: .5rem; }
+    .badge.text-bg-light { background-color: #f8f9fa; }
+
 }
