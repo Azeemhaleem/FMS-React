@@ -1,5 +1,5 @@
 // src/Components-driver/Settings.jsx
-import React, { useEffect, useState, useMemo } from "react";
+import  { useEffect, useState, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   FaUser,
@@ -23,6 +23,7 @@ import api from "../api/axios.jsx";
 import SettingItem from "../components/SettingItem.jsx";
 import HelpItem from "../components/HelpItem.jsx";
 import "bootstrap/dist/css/bootstrap.min.css";
+
 
 const Settings = () => {
   const navigate = useNavigate();
@@ -294,7 +295,7 @@ const Settings = () => {
                   label="Notifications"
                   toggle
                   id="notifications"
-                  onClick={setActiveSection}      // keeps current behavior if you use it
+                  
                   toggleChecked={notifEnabled}     // <-- new
                   onToggle={onToggleNotifications} // <-- new
                   helperText={notifLoadError || (notifBusy ? "Saving…" : undefined)}
