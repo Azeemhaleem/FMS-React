@@ -1,358 +1,287 @@
-// import React, { useEffect, useState } from 'react';
-// import default_image from '../assets/default_user.svg'; // Use your actual path
-// import { FaCamera } from 'react-icons/fa';
-// import api from '../api/axios.jsx'; // Your Axios config file
-
-// For development/testing only (set token in localStorage)
-// localStorage.setItem('token', '22|rltHcXuNiFu5sbTri43YCfA5173PsHWNiqjbFjKd64779309');
-
-
-import React, {useEffect, useRef, useState} from 'react'
-import default_image from '../assets/default_user.svg'
-import {Link} from "react-router-dom";
+// src/Components-driver/DriverProfile.jsx
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import default_image from "../assets/default_user.svg";
 import OnlineStatus from "../components/OnlineStatus.jsx";
 import { FaCamera } from "react-icons/fa";
 import api from "../api/axios.jsx";
 
-const getToken = () => {
+function getToken() {
   try {
-    const tokenString = localStorage.getItem('token');
-    if (tokenString && !tokenString.startsWith('{') && !tokenString.startsWith('[')) {
-      return tokenString;
-    }
-    return tokenString ? JSON.parse(tokenString) : null;
-  } catch (error) {
-    console.error('Error parsing token:', error);
+    const raw = localStorage.getItem("token");
+    if (raw && !raw.startsWith("{") && !raw.startsWith("[")) return raw;
+    return raw ? JSON.parse(raw) : null;
+  } catch {
     return null;
   }
+}
+
+const fmtDate = (iso) => {
+  if (!iso) return "Not available";
+  const d = new Date(iso);
+  if (isNaN(d)) return "Not available";
+  return d.toLocaleDateString(undefined, { year: "numeric", month: "short", day: "2-digit" });
 };
 
-const token = getToken();
-
-const DriverProfile = () => {
-//   const [profileImage, setProfileImage] = useState(default_image);
-//   const [driver, setDriver] = useState({});
-//   const token = localStorage.getItem("token");
-//
-// const fetchDriver = async () => {
-//   try {
-//     const response = await api.get('/user', {
-//       headers: {
-//         Authorization: `Bearer ${token}`
-//       }
-//     });
-//
-//     if (response.status === 200) {
-//       setDriver(response.data);
-//     }
-//   } catch (error) {
-//     console.error('Failed to fetch driver data:', error?.response?.data || error.message);
-//   }
-// };
-//
-//
-//
-//   const fetchProfileImage = async () => {
-//     try {
-//       const response = await api.get('/driver/get-profile-image', {
-//         headers: { Authorization: `Bearer ${token}` }
-//       });
-//       if (response.status === 200) {
-//         setProfileImage(`http://127.0.0.1:8000${response.data.path}`);
-//       }
-//     } catch (error) {
-//       console.warn("Using default profile image.", error?.response?.data || error.message);
-//     }
-//   };
-//
-//   const handleImageChange = async (e) => {
-//     const file = e.target.files[0];
-//     if (!file) return;
-//
-//     const formData = new FormData();
-//     formData.append('image', file);
-//
-//     try {
-//       const response = await api.post('/driver/upload-profile-image', formData, {
-//         headers: {
-//           Authorization: `Bearer ${token}`,
-//           'Content-Type': 'multipart/form-data'
-//         }
-//       });
-//
-//       if (response.status === 200) {
-//         setProfileImage(`http://127.0.0.1:8000${response.data.path}`);
-//         window.dispatchEvent(new Event('profile-image-updated'));
-//         alert("Profile Image changed successfully!");
-//       } else {
-//         alert("Failed to upload image.");
-//       }
-//     } catch (error) {
-//       console.error("Upload failed:", error?.response?.data || error.message);
-//       alert("Image upload failed.");
-//     }
-//   };
-//
-//   useEffect(() => {
-//     fetchDriver();
-//     fetchProfileImage();
-//   }, []);
-//
-//   return (
-//     <div className="container mt-4">
-//       <div className="row g-4">
-//         {/* Profile Image + Name */}
-//         <div className="col-lg-4 bg-white rounded shadow p-4 text-center">
-//           <label className="position-relative d-inline-block" style={{ width: "140px", cursor: "pointer" }}>
-//             <img
-//               src={profileImage}
-//               onError={(e) => { e.target.src = default_image; }}
-//               alt="Driver"
-//               className="rounded-circle w-100"
-//               style={{ objectFit: 'cover', aspectRatio: '1/1' }}
-//             />
-//             <div className="position-absolute top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center rounded-circle overlay-hover">
-//               <FaCamera size={28} />
-//             </div>
-//             <input
-//               type="file"
-//               accept="image/*"
-//               onChange={handleImageChange}
-//               style={{ display: 'none' }}
-//             />
-//           </label>
-//           <h5 className="mt-3"><span style={{ color: '#7d8ea6' }}>Hi,</span>{driver?.username || 'Driver Name'}</h5>
-//           <p className="text-muted">{driver?.city || 'Location Unknown'}</p>
-//         </div>
-//
-//         {/* Driver Details */}
-//         <div className="col-lg-8">
-//           <div className="card bg-white rounded shadow p-4">
-//             <div className="mb-3"><strong>License Number:</strong> <div>{driver?.license_number || 'Undefined'}</div></div>
-//             <div className="mb-3"><strong>NIC:</strong> <div>{driver?.nic || 'Undefined'}</div></div>
-//             <div className="mb-3"><strong>Date of Birth:</strong> <div>{driver?.dob || 'Undefined'}</div></div>
-//             <div className="mb-3"><strong>Email:</strong> <div>{driver?.email || 'Undefined'}</div></div>
-//             <div className="mb-3"><strong>Telephone Number:</strong> <div>{driver?.phone || 'Undefined'}</div></div>
-//           </div>
-//         </div>
-//       </div>
-//
-//       {/* Vehicle Table */}
-//       <div className="mt-4 bg-white rounded shadow p-4">
-//         <h6 className="fw-bold mb-3">Vehicle Details:</h6>
-//         <table className="table table-sm table-bordered text-center align-middle">
-//           <thead className="table-light">
-//             <tr>
-//               <th>Vehicle Number</th>
-//               <th>Model & Type (Optional)</th>
-//               <th>Insurance Expiry Date</th>
-//             </tr>
-//           </thead>
-//           <tbody>
-//             {/* This should come from actual driver vehicle data */}
-//             <tr>
-//               <td>{driver?.vehicle_number || 'WP ABC-1234'}</td>
-//               <td>{driver?.vehicle_model || 'Toyota Prius - Car'}</td>
-//               <td>{driver?.insurance_expiry || '2025-06-15'}</td>
-//             </tr>
-//           </tbody>
-//         </table>
-//       </div>
-//     </div>
-//   );
+// Make backend paths absolute even if they’re like “/storage/…”
+const toAbsolute = (path) => {
+  if (!path) return null;
+  if (/^https?:\/\//i.test(path)) return path; // already absolute
+  // build from origin (scheme://host[:port])
+  let origin;
+  try {
+    origin = new URL(api.defaults?.baseURL || window.location.origin).origin;
+  } catch {
+    origin = window.location.origin;
+  }
+  if (!path.startsWith("/")) path = `/${path}`;
+  return `${origin}${path}`;
+};
 
 
-
+export default function DriverProfile() {
+  const token = getToken();
+  const auth = useMemo(() => ({ headers: { Authorization: `Bearer ${token}` } }), [token]);
 
   const [profileImage, setProfileImage] = useState(default_image);
+  const fileInputRef = useRef(null);
 
+  const [basic, setBasic] = useState({ username: "", email: "" });
+  const [info, setInfo] = useState({
+    full_name: "",
+    license_number: "",
+    license_expiry_date: "",
+  });
+  const [role] = useState("Driver");
+  const [isVerified, setIsVerified] = useState(false);
+
+  const [loading, setLoading] = useState(true);
+  const [imgBusy, setImgBusy] = useState(false);
+  const [error, setError] = useState("");
+
+  // ---------- load all data ----------
   useEffect(() => {
-    if (profileImage !== default_image || !token) return;
+    let alive = true;
+    async function load() {
+      if (!token) return;
+      setLoading(true);
+      setError("");
 
-    let isMounted = true;
-
-    async function getProfilePic() {
       try {
-        const response = await api.get('/driver/get-profile-image', {
-          headers: { Authorization: `Bearer ${token}` }
-        });
+        const [rBasic, rInfo, rPic, rVer] = await Promise.allSettled([
+          api.get("/driver/get-user-name-email", auth),
+          api.get("/driver/get-user-info", auth),
+          api.get("/driver/get-profile-image", auth),
+          api.get("/driver/check-email-verified", auth),
+        ]);
 
-        if (isMounted && response.status === 200) {
-          const imagePath = response.data.path;
-          const fullImageUrl = `http://127.0.0.1:8000${imagePath}`;
-          setProfileImage(fullImageUrl);
+        if (alive) {
+          // username + masked email
+          if (rBasic.status === "fulfilled") {
+            setBasic({
+              username: rBasic.value?.data?.user_name ?? "",
+              email: rBasic.value?.data?.email ?? "No email available",
+            });
+          }
+
+          // driver info
+          if (rInfo.status === "fulfilled") {
+            const d = rInfo.value?.data || {};
+            setInfo({
+              full_name: d.full_name ?? "",
+              license_number: d.license_number ?? "",
+              license_expiry_date: d.license_expiry_date ?? "",
+            });
+          }
+
+          // profile image
+          if (rPic.status === "fulfilled") {
+            const full = toAbsolute(rPic.value?.data?.path);
+            if (full) {
+              const bust = `${full}${full.includes("?") ? "&" : "?"}t=${Date.now()}`;
+              setProfileImage(bust);
+              try { localStorage.setItem("driver_profile_img", bust); } catch {}
+              window.dispatchEvent(new CustomEvent("profile-image-updated", { detail: { url: bust } }));
+           }
+          }
+
+          // email verified
+          if (rVer.status === "fulfilled") {
+            setIsVerified(!!rVer.value?.data?.is_email_verified);
+          }
         }
-      } catch (error) {
-        if (isMounted) {
-          console.error('Profile Image Failed to load:', error.response?.data || error.message);
-        }
+      } catch (e) {
+        if (alive) setError(e?.response?.data?.message || "Failed to load profile.");
+      } finally {
+        if (alive) setLoading(false);
       }
     }
+    load();
+    return () => {
+      alive = false;
+    };
+  }, [token, auth]);
 
-    getProfilePic();
-
-    return () => { isMounted = false; };
-  }, [token, profileImage]);
-
+  // ---------- image upload ----------
+  const onPickFile = () => fileInputRef.current?.click();
 
   const handleImageChange = async (e) => {
-    const file = e.target.files[0];
+    const file = e.target.files?.[0];
     if (!file) return;
 
-    const formData = new FormData();
-    formData.append('image', file); // name should match what your Laravel backend expects
+    // Basic validation
+    const okTypes = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+    if (!okTypes.includes(file.type)) {
+      alert("Please choose a JPG, PNG, WEBP or GIF image.");
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      alert("Image is too large (max 5 MB).");
+      return;
+    }
 
+    const form = new FormData();
+    form.append("image", file);
+
+    setImgBusy(true);
     try {
-      const response = await api.post('/driver/upload-profile-image', formData, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'multipart/form-data'
-        }
+      const res = await api.post("/driver/upload-profile-image", form, {
+        ...auth,
+        headers: { ...auth.headers, "Content-Type": "multipart/form-data" },
       });
-
-      if (response.status === 200) {
-        alert("Profile Image changed successfully!");
-        window.location.reload();
-      } else {
-        alert("Invalid Image type!");
-      }
-    } catch (error) {
-      console.error('Profile Image Update Failed:', error.response?.data || error.message);
-      alert("Profile Image Update Failed!");
+   const full = toAbsolute(res?.data?.path);
+   if (full) {
+     const bust = `${full}${full.includes("?") ? "&" : "?"}t=${Date.now()}`;
+     setProfileImage(bust);
+     try { localStorage.setItem("driver_profile_img", bust); } catch {}
+     // notify header (and any other listeners)
+     window.dispatchEvent(new CustomEvent("profile-image-updated", { detail: { url: bust } }));
+   }
+      alert("Profile image updated.");
+    } catch (err) {
+      console.error("Profile image upload failed:", err?.response?.data || err.message);
+      alert(err?.response?.data?.message || "Image upload failed.");
+    } finally {
+      setImgBusy(false);
+      // reset input so selecting the same file again still triggers change
+      if (fileInputRef.current) fileInputRef.current.value = "";
     }
   };
 
-  const [officerAuthData, setOfficerAuthData] = useState(null);
-  const [officerPData, setOfficerPData] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [userRole, setUserRole] = useState(null);
-
-  const fetchUserData = async () => {
-    try {
-      setLoading(true);
-      const response = await api.get('/driver/get-user-name-email',
-          {headers: {'Authorization':`Bearer ${token}`}
-          }
-      );
-      const response1 = await api.get('/driver/get-user-info',
-          {headers: {'Authorization':`Bearer ${token}`}
-          }
-      )
-      if (response.status === 200 && response1.status === 200) {
-        const username = response.data.user_name;
-        const email = response.data.email;
-        setOfficerAuthData({
-          username,
-          email
-        })
-        const full_name = response1.data.full_name;
-        const license_number = response1.data.license_number;
-        const license_expiry_date = response1.data.license_expiry_date;
-        const role = response1.data.role;
-        setUserRole("Driver")
-        setOfficerPData({
-          full_name,
-          license_number,
-          license_expiry_date
-        })
-      } else {
-        console.log("Failed to fetch username email");
-      }
-    } catch (error) {
-      console.error('Username Email fetching failed:', error.response?.data || error.message);
-      console.error('Officer personal data fetching failed:', error.response1?.data || error.message);
-    }
-    finally {
-      setLoading(false);
-    }
-  }
-
-  useEffect(() => {
-    fetchUserData();
-  }, []);
-
   return (
-
-      <div>
-        <div className="row-cols-lg-auto d-lg-flex">
-          <div className="profile col-lg-4 bg-white rounded shadow me-lg-3" style={{height:"fit-content"}}>
-            <div className="d-block w-100 my-4">
-              <div className="d-flex justify-content-center mb-4 position-relative" style={{width: "100%"}}>
-                <label className="position-relative d-block" style={{width: "140px", cursor: "pointer"}}>
-                  <img
-                      src={profileImage}
-                      alt="profile"
-                      className="rounded-circle w-100"
-                      style={{display: 'block', objectFit: 'cover', aspectRatio: '1 / 1'}}
-                  />
-
-                  <div
-                      className="position-absolute top-0 start-0 w-100 h-100 rounded-circle d-flex justify-content-center align-items-center overlay-hover"
-                  >
-                    <FaCamera size={32}/>
-                  </div>
-
-                  <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleImageChange}
-                      style={{display: "none"}}
-                  />
-                </label>
-                <div
-                    className="online-status-checker position-absolute w-75 d-flex justify-content-center"
-                    style={{
-                      bottom: "11%",
-                      right: "40%",
-                      transform: "translate(50%, 50%)",
-                      zIndex: 1,
-                    }}
-                >
-                  <OnlineStatus/>
-                </div>
+    <div className="container mt-4 mb-5 ">
+      {/* top row */}
+      <div className="row g-4">
+        {/* LEFT: avatar + username/role */}
+        <div className="col-lg-4 bg-white rounded shadow p-4" style={{ height: "fit-content" }}>
+          <div className="d-flex justify-content-center mb-4 position-relative">
+            <button
+              type="button"
+              onClick={onPickFile}
+              className="position-relative d-block p-0 border-0 bg-transparent"
+              style={{ width: 140, cursor: "pointer" }}
+              aria-label={imgBusy ? "Uploading image…" : "Change profile photo"}
+              disabled={imgBusy}
+            >
+              <img
+                src={profileImage}
+                onError={(e) => {
+                  e.currentTarget.src = default_image;
+                }}
+                alt="Driver profile"
+                className="rounded-circle w-100"
+                style={{ objectFit: "cover", aspectRatio: "1 / 1", display: "block" }}
+              />
+              {/* hover overlay */}
+              <div className="position-absolute top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center rounded-circle overlay-hover">
+                <FaCamera size={28} />
               </div>
-              <div className="d-flex justify-content-center mb-3">
-                <div className="justify-content-center text-white text-center fs-5 rounded py-1 px-3"
-                     style={{width: "auto", backgroundColor: "#332E90"}}>
-                  {officerAuthData?.username || 'Undefined'}
-                </div>
-              </div>
-              <div className="d-flex justify-content-center mb-1">
-                <div className="justify-content-center text-white text-center fs-5 rounded py-1 px-3"
-                     style={{width: "auto", backgroundColor: "#332E90"}}>
-                  {userRole || 'Undefined'}
-                </div>
-              </div>
+            </button>
+
+            {/* file input */}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleImageChange}
+              style={{ display: "none" }}
+            />
+
+            {/* online/verified dot (your existing component) */}
+            <div
+              className="position-absolute w-75 d-flex justify-content-center"
+              style={{ bottom: "11%", right: "40%", transform: "translate(50%, 50%)", zIndex: 1 }}
+            >
+              <OnlineStatus />
             </div>
           </div>
-          <div className="profile-details col-lg-7">
-            <div className="card bg-white rounded p-4 shadow">
-              <div>
-                <span className="info-label">Driver Full Name:</span>
-                <div className="info-value">{officerPData?.full_name || 'Undefined'}</div>
-              </div>
-              <div>
-                <span className="info-label">Driver License:</span>
-                <div className="info-value">{officerPData?.license_number || 'Undefined'}</div>
-              </div>
-              <div>
-                <span className="info-label">Email:</span>
-                <div className="info-value">{officerAuthData?.email || 'No email available'}</div>
-              </div>
-              <div>
-                <span className="info-label">Driver License Expiry Data:</span>
-                <div className="info-value">{officerPData?.license_expiry_date || 'Undefined'}</div>
-              </div>
-              {/*<div>*/}
-              {/*    <span className="info-label">Account type:</span>*/}
-              {/*    <div className="info-value">Traffic Officer</div>*/}
-              {/*</div>*/}
-            </div>
+
+          <div className="d-flex justify-content-center mb-3 ">
+            <span
+              className="text-white text-center fs-5 rounded py-1 px-3"
+              style={{ backgroundColor: "#332E90" }}
+              title="Username"
+            >
+              {basic.username || "—"}
+            </span>
+          </div>
+
+          <div className="d-flex justify-content-center">
+            <span
+              className="text-white text-center fs-6 rounded py-2 px-3"
+              style={{ backgroundColor: "#332E90" }}
+              title="Role"
+            >
+              {role}
+            </span>
+          </div>
+        </div>
+
+        {/* RIGHT: details */}
+        <div className="col-lg-8">
+          <div className="card bg-white rounded shadow p-4">
+            {error && <div className="alert alert-danger py-2 mb-3">{error}</div>}
+
+            {loading ? (
+              <div className="text-muted">Loading profile…</div>
+            ) : (
+              <>
+                <div className="mb-3">
+                  <span className="info-label">Driver Full Name</span>
+                  <div className="info-value">{info.full_name || "Not available"}</div>
+                </div>
+
+                <div className="mb-3">
+                  <span className="info-label">Driver License</span>
+                  <div className="info-value">{info.license_number || "Not available"}</div>
+                </div>
+
+                <div className="mb-3 d-flex align-items-center gap-2">
+                  <div style={{ flex: 1 }}>
+                    <span className="info-label ">Email
+                    <span
+                    className={`badge ${isVerified ? "bg-success m-1" : "bg-secondary m-1"}`}
+                    title={isVerified ? "Email verified" : "Email not verified"}
+                    style={{ width:"9%" }}
+                  >
+                    {isVerified ? "Verified" : "Not verified"}
+                  </span>
+                  </span>
+                    <div className="info-value">{basic.email || "No email available"}</div>
+                  </div>
+                  
+                </div>
+
+                <div className="mb-1">
+                  <span className="info-label">Driver License Expiry Date</span>
+                  <div className="info-value">{fmtDate(info.license_expiry_date)}</div>
+                </div>
+              </>
+            )}
           </div>
         </div>
       </div>
+
+      {/* (Optional) Vehicles block remains below if/when you wire real data */}
+    </div>
   );
-};
-
-export default DriverProfile;
-
+}
