@@ -34,4 +34,6 @@ Route::middleware(['auth:sanctum', EnsureDriver::class, EnsureEmailVerified::cla
     Route::post(
         '/appeal-fine', [FineAppealController::class, 'appealFine']
         )->name('appeal-fine');
+     Route::get('/driver/appeals', [FineAppealController::class, 'myAppeals'])
+        ->name('driver.my-appeals');
 });
