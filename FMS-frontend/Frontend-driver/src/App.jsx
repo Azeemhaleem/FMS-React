@@ -4,6 +4,7 @@ import LoginRoutes from "./Routes/LoginRoutes";
 // import RegisterRoutes from "./Routes/RegisterRoutes";
 import TestApiRoutes from "./Routes/testApiRoutes";
 import { BrowserRouter} from "react-router-dom";
+import PaymentRoutes from "./Routes/PaymentRoutes"
 
 function App() {
 
@@ -11,7 +12,7 @@ function App() {
   <BrowserRouter>
     <DriverRoutes/>
     <LoginRoutes/>
-
+    <PaymentRoutes/>
     <TestApiRoutes/>
   </BrowserRouter>
   );
