@@ -22,6 +22,7 @@ class ChargedFine extends Model
         'paid_at',
         'expires_at',
         'issued_at',
+        'appeal_requested',  
     ];
 
     protected $casts = [

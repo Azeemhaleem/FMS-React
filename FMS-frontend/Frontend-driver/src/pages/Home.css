@@ -1,8 +1,4 @@
-*{
-    width: 100%;
-    margin: 0;
-    padding: 0;
-}
+html, body, #root, .home-screen { margin: 0; padding: 0; width: 100%; }
 
 #navbarNav ul li a p{
     width: fit-content;

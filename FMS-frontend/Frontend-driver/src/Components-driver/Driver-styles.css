@@ -259,4 +259,70 @@ label:hover .overlay-hover {
         bottom: 10% !important;
         right: 33% !important;
     }
+
 }
+/* ---- Payment table layout (applies on all screen sizes) ---- */
+.table-fixed {
+  table-layout: fixed;
+  width: 100%;
+}
+
+/* Make the checkbox column tiny */
+col.check-col {           /* targets the <col> element */
+  width: 28px !important;
+}
+
+
+
+.check-col input[type="checkbox"] {
+  display: block;
+  margin: 0 auto;
+}
+
+
+/* Optional: card background used in this page */
+.card-softgradient { background: linear-gradient(135deg, #d9eaff 0%, #ffffff 100%); }
+
+.card-softgradient { background: linear-gradient(135deg, #d9eaff 0%, #ffffff 100%); }
+.table-fixed { table-layout: fixed; width: 100%; }
+.nowrap { white-space: nowrap; }
+.truncate { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+ .appeal-list { scroll-behavior: smooth; }
+        .appeal-row {
+          display: grid;
+          grid-template-columns: 56px 1fr;
+          gap: .75rem;
+          padding: .75rem .25rem;
+          border-bottom: 1px solid #eef2f7;
+        }
+        .appeal-row:last-child { border-bottom: 0; }
+        .appeal-main {
+            grid-column: 2 / -1;
+            }
+        
+        .date-pill {
+          display: flex; flex-direction: column; align-items: center; justify-content: center;
+          width: 56px; min-width: 56px;
+          background: #f6f8ff; border-radius: .75rem; box-shadow: inset 0 0 0 1px #e6e9f3;
+        }
+        .date-pill .day { font-weight: 700; font-size: 1.25rem; line-height: 1.1; }
+        .date-pill .mon { font-size: .7rem; letter-spacing: .08em; color: #6c757d; }
+        .date-pill .year { font-size: .7rem; color: #9aa4b2; }
+
+        .appeal-content { all: unset; display: block; cursor: pointer; padding: .25rem 0; }
+        .appeal-content:hover .status-badge { box-shadow: 0 0 0 2px rgba(0,0,0,.03) inset; }
+
+        .status-badge {
+          display: inline-flex; align-items: center; gap: .25rem;
+          font-size: .8rem; padding: .25rem .5rem; border-radius: 999px; user-select: none;
+        }
+        .status-badge.pending { background: #fff3cd; color: #7a5b00; }
+        .status-badge.review  { background: #e7f1ff; color: #0b5ed7; }
+        .status-badge.resolved{ background: #eaf7ee; color: #1e7e34; }
+
+        .appeal-details {
+          background: #f8fafc; border-radius: .5rem; padding: .75rem; margin-top: .5rem; border: 1px solid #eef2f7;
+        }
+        .appeal-details dt { color: #6c757d; font-weight: 600; }
+        .appeal-details dd { margin-bottom: .25rem; }
