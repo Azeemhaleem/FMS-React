@@ -4,9 +4,19 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import api from '../api/axios.jsx';
 import default_image from '../assets/default_user.svg';
 
-function Header({ username, role }) {
-  const [profileImage, setProfileImage] = useState(default_image);
 
+ const toAbsolute = (path) => {
+   if (!path) return null;
+   if (/^https?:\/\//i.test(path)) return path;
+   const base = (api.defaults?.baseURL || "").replace(/\/$/, "");
+   return `${base}${path}`;
+ };
+
+function Header({ username, role }) {
+   const [profileImage, setProfileImage] = useState(
+   // use last saved value if present
+   () => localStorage.getItem("driver_profile_img") || default_image
+ );
   const getToken = () => {
     try {
       const tokenString = localStorage.getItem('token');
@@ -59,9 +69,12 @@ function Header({ username, role }) {
           });
 
           if (response.status === 200) {
-            const imagePath = response.data.path;
-            const fullImageUrl = `http://127.0.0.1:8000${imagePath}?t=${new Date().getTime()}`;
-            setProfileImage(fullImageUrl);
+           const full = toAbsolute(response.data.path);
+           if (full) {
+             const bust = `${full}${full.includes("?") ? "&" : "?"}t=${Date.now()}`;
+             setProfileImage(bust);
+             try { localStorage.setItem("driver_profile_img", bust); } catch {}
+           }
           }
         } catch (error) {
           console.error('Profile Image Failed to load:', error.response?.data || error.message);
@@ -72,6 +85,24 @@ function Header({ username, role }) {
     }
 
   }, [token, user]);
+
+   // react to profile image updates from the profile page
+ useEffect(() => {
+   const onImgUpdated = (e) => {
+     const url = e?.detail?.url;
+     if (url) setProfileImage(url);
+   };
+   window.addEventListener("profile-image-updated", onImgUpdated);
+   // cross-tab sync
+   const onStorage = (e) => {
+     if (e.key === "driver_profile_img" && e.newValue) setProfileImage(e.newValue);
+   };
+   window.addEventListener("storage", onStorage);
+   return () => {
+     window.removeEventListener("profile-image-updated", onImgUpdated);
+     window.removeEventListener("storage", onStorage);
+   };
+ }, []);
 
   return (
       <header className="header">
@@ -120,14 +151,20 @@ function Header({ username, role }) {
                   {role === 'Driver' && (
                       <Link to="/DriverProfile" className="profile-img-link">
                         <img
-                            src={profileImage}
-                            onError={(e) => { e.target.src = default_image; }}
-                            alt="Profile"
-                            width="50px"
-                            height="50px"
-                            className="rounded-circle d-inline-flex"
+                          src={profileImage}
+                          onError={(e) => { e.currentTarget.src = default_image; }}
+                          alt="Profile"
+                          style={{
+                            width: 48,
+                            height: 48,
+                            aspectRatio: '1 / 1',
+                            borderRadius: '50%',
+                            objectFit: 'cover',
+                            display: 'block',       // avoids inline baseline quirks
+                          }}
                         />
                       </Link>
+
                   )}
                 </p>
               </div>
