@@ -13,7 +13,8 @@ function HigherOfficerRoutes() {
         <Route path="/ManageChargedFines" element={<MainContent role={role} type="ChargedFines" />} />
         <Route path="/ManageTrafficPolice" element={<MainContent role={role} type="ManageTrafficPolice" />} />
         <Route path="/HigherOfficerProfile" element={<MainContent role={role}  type="Profile" />} />
-        <Route path="/PoliceNotifications" element={<MainContent role={role} type="Notifications" />} />
+        <Route path="/HigherOfficerPoliceNotifications" element={<MainContent role={role} type="Notifications" />} />
+        <Route path="/HigherOfficerSettings" element={<MainContent role={role} type="Settings" />} />
 
         {/* Settings index + sub-pages */}
       <Route path="/HigherOfficerSettings" element={<MainContent role={role} type="Settings" />} />
