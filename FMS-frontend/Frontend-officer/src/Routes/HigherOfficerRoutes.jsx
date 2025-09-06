@@ -14,6 +14,17 @@ function HigherOfficerRoutes() {
         <Route path="/ManageTrafficPolice" element={<MainContent role={role} type="ManageTrafficPolice" />} />
         <Route path="/HigherOfficerProfile" element={<MainContent role={role}  type="Profile" />} />
         <Route path="/PoliceNotifications" element={<MainContent role={role} type="Notifications" />} />
+
+        {/* Settings index + sub-pages */}
+      <Route path="/HigherOfficerSettings" element={<MainContent role={role} type="Settings" />} />
+      <Route path="/HigherOfficerSettings/account" element={<MainContent role={role} type="Settings" />} />
+      <Route path="/HigherOfficerSettings/notifications" element={<MainContent role={role} type="Settings" />} />
+      <Route path="/HigherOfficerSettings/help" element={<MainContent role={role} type="Settings" />} />
+      <Route path="/HigherOfficerSettings/security/username" element={<MainContent role={role} type="Settings" />} />
+      <Route path="/HigherOfficerSettings/security/password" element={<MainContent role={role} type="Settings" />} />
+      <Route path="/HigherOfficerSettings/sessions" element={<MainContent role={role} type="Settings" />} />
+      <Route path="/HigherOfficerSettings/danger" element={<MainContent role={role} type="Settings" />} />
+
        </Routes>
     );
 }

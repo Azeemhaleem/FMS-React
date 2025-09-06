@@ -12,7 +12,6 @@ function AdminRoutes() {
     <Routes>
 
       <Route path="/AdminOverview" element={<MainContent role={role} type="Overview" />} />
-      <Route path="/AdminSettings" element={<MainContent role={role} type="Settings" />} />
       <Route path="/AdminReport" element={<MainContent role={role} type="Report" />} />
       <Route path="/AdminOfficers" element={<MainContent role={role} type="Officers" />} />
       <Route path="/PoliceNotifications" element={<MainContent role={role} type="Notifications" />} />
@@ -21,6 +20,17 @@ function AdminRoutes() {
       <Route path="/AdminHigherPolice" element={<MainContent role={role} type="higherPolice" />} />
       <Route path="/AssignTrafficPolice" element={<MainContent role={role} type="assignOfficer" />} />
       <Route path="/AdminProfile" element={<MainContent role={role} type="Profile" />} />
+
+      {/* Settings index + sub-pages */}
+      <Route path="/AdminSettings" element={<MainContent role={role} type="Settings" />} />
+      <Route path="/AdminSettings/account" element={<MainContent role={role} type="Settings" />} />
+      <Route path="/AdminSettings/notifications" element={<MainContent role={role} type="Settings" />} />
+      <Route path="/AdminSettings/help" element={<MainContent role={role} type="Settings" />} />
+      <Route path="/AdminSettings/security/username" element={<MainContent role={role} type="Settings" />} />
+      <Route path="/AdminSettings/security/password" element={<MainContent role={role} type="Settings" />} />
+      <Route path="/AdminSettings/sessions" element={<MainContent role={role} type="Settings" />} />
+      <Route path="/AdminSettings/danger" element={<MainContent role={role} type="Settings" />} />
+
     </Routes>
   );
 }
