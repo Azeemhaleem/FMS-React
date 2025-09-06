@@ -37,7 +37,7 @@ function Slidebar({ Notifications, role }) {
     Admin: [
       { icon: faTableColumns, text: "Overview",link:"/AdminOverview" },
       { icon: faChartLine, text: "higher police",link:"/AdminHigherPolice" },
-      { icon: faCommentDots, text: "Notifications",link:"/PoliceNotifications" },
+      { icon: faCommentDots, text: "Notifications",link:"/AdminPoliceNotifications" },
       { icon: faPlusCircle, text: "traffic police",link:"/AdminTrafficPolice" },
       { icon: faGear, text: "Settings",link:"/AdminSettings" },
       { icon: faUser, text: "Profile",link:"/AdminProfile" },
@@ -52,7 +52,7 @@ function Slidebar({ Notifications, role }) {
       { icon: faUser, text: "Drivers",link:"/SuperAdminDrivers" },
       { icon: faClipboard, text: "Police",link:"/SuperAdminOfficers" },
       { icon: faChartLine, text: "Analytics",link:"/SuperAdminAnalytics" },
-      { icon: faCommentDots, text: "Notifications",link:"/PoliceNotifications" },
+      { icon: faCommentDots, text: "Notifications",link:"/SuperAdminPoliceNotifications" },
       { icon: faGear, text: "Settings",link:"/SuperAdminSettings" },
       { icon: faUser, text: "Profile",link:"/SuperAdminProfile" },
       
@@ -61,7 +61,7 @@ function Slidebar({ Notifications, role }) {
     Officer: [
       { icon: faTableColumns, text: "Overview",link:"/OfficerOverview" },
       { icon: faDashboard, text: "Dashboard",link:"/OfficerDashboard" },
-      { icon: faBell, text: "Notifications",link:"/PoliceNotifications" },
+      { icon: faBell, text: "Notifications",link:"/OfficerPoliceNotifications" },
       { icon: faGear, text: "Settings",link:"/OfficerSettings" },
       { icon: faUser, text: "Profile",link:"/OfficerProfile" },
     ],
@@ -70,7 +70,8 @@ function Slidebar({ Notifications, role }) {
       { icon: faTableList, text: "Fines",link:"/ManageChargedFines" },
       { icon: faUser, text: "Traffic Officers",link:"/ManageTrafficPolice" },
       { icon: faUser, text: "Profile",link:"/HigherOfficerProfile" },
-      { icon: faBell, text: "Notifications",link:"/PoliceNotifications" },
+      { icon: faBell, text: "Notifications",link:"/HigherOfficerPoliceNotifications" },
+      { icon: faGear, text: "Settings",link:"/HigherOfficerSettings" },
       ],
   };
 

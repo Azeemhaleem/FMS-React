@@ -35,6 +35,7 @@ import OfficerOverview from "../Components-officer/OfficerOverview";
 import OfficerDashboard from "../Components-officer/OfficerDashboard.jsx";
 import OfficerSettings from "../Components-officer/OfficerSettings.jsx";
 import OfficerProfile from "../Components-officer/OfficerProfile.jsx";
+import HigherOfficerSettings from "../Component-higherOfficer/hofficer-settings.jsx";
 
 /* ---- Shared (police) ---- */
 import ManageAppeal from "../Component-higherOfficer/ManageAppeal.jsx";
@@ -158,8 +159,7 @@ function MainContent({ username, image, role, type }) {
                   {type === "ManageTrafficPolice" && <ManageTrafficPolice />}
                   {type === "Notifications" && <PoliceNotifications />}
                   {type === "Profile" && <PoliceProfile />}
-                  {/* Until you build a dedicated HigherOfficer settings component, reuse OfficerSettings */}
-                  {type === "Settings" && <OfficerSettings section={settingsSection} role="HigherOfficer" />}
+                  {type === "Settings" && <HigherOfficerSettings section={settingsSection} />}
                 </>
               )}
             </div>
