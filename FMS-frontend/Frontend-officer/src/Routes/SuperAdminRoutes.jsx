@@ -25,6 +25,17 @@ function SuperAdminRoutes() {
       <Route path="/AccountCreationLogs" element={<MainContent role={role} type="AccountCreationLogs" />} />
       <Route path="/ChargedFinesSadmin" element={<MainContent role={role} type="ChargedFinesSadmin" />} />
       <Route path="/SuperAdminProfile" element={<MainContent role={role} type="Profile" />} />
+
+      {/* Settings index + sub-pages */}
+      <Route path="/SuperAdminSettings" element={<MainContent role={role} type="Settings" />} />
+      <Route path="/SuperAdminSettings/account" element={<MainContent role={role} type="Settings" />} />
+      <Route path="/SuperAdminSettings/notifications" element={<MainContent role={role} type="Settings" />} />
+      <Route path="/SuperAdminSettings/help" element={<MainContent role={role} type="Settings" />} />
+      <Route path="/SuperAdminSettings/security/username" element={<MainContent role={role} type="Settings" />} />
+      <Route path="/SuperAdminSettings/security/password" element={<MainContent role={role} type="Settings" />} />
+      <Route path="/SuperAdminSettings/sessions" element={<MainContent role={role} type="Settings" />} />
+      <Route path="/SuperAdminSettings/danger" element={<MainContent role={role} type="Settings" />} />
+
       
     </Routes>
   );
