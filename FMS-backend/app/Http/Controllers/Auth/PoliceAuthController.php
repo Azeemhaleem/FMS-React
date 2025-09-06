@@ -139,14 +139,21 @@ class PoliceAuthController extends Controller
         ]);
     }
 
-    public function getUserInfo(Request $request) {
+   public function getUserInfo(Request $request) {
         $user = $request->user();
-        $policeInDept = $user->getPoliceinDept();
+
+        // Make sure related models are available
+        $user->loadMissing('role', 'admin', 'higherPolice', 'trafficPolice');
+
+        // Use the accessor property, not a method:
+        $policeInDept = $user->police_in_dept;
+
         return response()->json([
-            'full_name' => $policeInDept->full_name,
-            'police_id' => $policeInDept->police_id,
-            'station' => $user->station,
-            'role' => $user->role_name
+            'full_name' => $policeInDept?->full_name,
+            'police_id' => $policeInDept?->police_id,
+            'station'   => $user->station,     // will work after #2 below
+            'role'      => $user->role_name,
         ]);
     }
+
 }
