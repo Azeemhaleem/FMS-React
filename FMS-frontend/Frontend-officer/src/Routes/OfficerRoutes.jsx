@@ -15,7 +15,7 @@ function OfficerRoutes() {
               <Route path="/OfficerSettings" element={<PrivateRoute> <MainContent role={role} type="Settings" /> </PrivateRoute>} />
               <Route path="/OfficerDashboard" element={<PrivateRoute> <MainContent role={role} type="Dashboard" /> </PrivateRoute>} />
               <Route path="/OfficerProfile" element={<PrivateRoute> <MainContent role={role} type="Profile" /> </PrivateRoute>} />
-              <Route path="/OfficerNotifications" element={<PrivateRoute> <MainContent role={role} type="Notifications" /> </PrivateRoute>} />
+              <Route path="/PoliceNotifications" element={<MainContent role={role} type="Notifications" />} />
       </Routes>
   );
 }

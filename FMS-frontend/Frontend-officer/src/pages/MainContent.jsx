@@ -42,6 +42,9 @@ import ManageTrafficPolice from "../Component-higherOfficer/ManageTrafficPolice.
 import PoliceProfile from "../components/PoliceProfile.jsx";
 
 
+import PoliceNotifications from "../components/Notifications-police.jsx";
+
+
 
 
 function MainContent({ username,image,role,type }) {
@@ -117,7 +120,6 @@ function MainContent({ username,image,role,type }) {
               />
             </p>
           </span> */}
-
             
                       {role === "Admin" && (
               <>
@@ -125,7 +127,7 @@ function MainContent({ username,image,role,type }) {
                 {type === "Settings" && <AdminSettings />}
                 {type === "Report" && <AdminReport />}
                 {type === "Officers" && <AdminOfficers />}
-                {type === "Messages" && <AdminMessages />}
+                {type === "Notifications" && <PoliceNotifications />}
                 {type === "Drivers" && <AdminDrivers />}
                 {type === "trafficPolice" && <AdminTrafficPolice />}
                 {type === "higherPolice" && <AdminHigherPolice />}
@@ -140,7 +142,7 @@ function MainContent({ username,image,role,type }) {
                 {type === "Report" && <SuperAdminReport />}
                 {type === "Officers" && <SuperAdminOfficers />}
                 {type === "Admins" && <SuperAdminAdmins/>}
-                {type === "Messages" && <SuperAdminMessages />}
+                {type === "Notifications" && <PoliceNotifications />}
                 {type === "Fines" && <SuperAdminFines />}
                 {type === "Drivers" && <SuperAdminDrivers />}
                 {type === "Analytics" && <SuperAdminAnalytics />} 
@@ -154,7 +156,7 @@ function MainContent({ username,image,role,type }) {
               <>
                 {type === "Overview" && <OfficerOverview />}
                 {type === "Dashboard" && <OfficerDashboard />}
-                {type === "Notifications" && <OfficerNotifications />}
+                {type === "Notifications" && <PoliceNotifications />}
                 {type === "Settings" && <OfficerSettings />}
                 {type === "Profile" && <OfficerProfile/>}
               </>
@@ -165,6 +167,7 @@ function MainContent({ username,image,role,type }) {
                 {type === "ChargedFines" && <ManageChargedFines />}
                 {type === "ManageTrafficPolice" && <ManageTrafficPolice/>}
                 {type === "Profile" && <PoliceProfile />}
+                {type === "Notifications" && <PoliceNotifications />}
                
                 </>
             )} 
