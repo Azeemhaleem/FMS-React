@@ -19,13 +19,13 @@ import {
 import { Link } from "react-router-dom";
 
 
-function Slidebar({ messages, role }) {
+function Slidebar({ Notifications, role }) {
   const sidebarOptions = {
     Driver: [
       { icon: faTableColumns, text: "Overview",link:"/DriverOverview" },
       { icon: faUser, text: "My Profile",link:"/DriverProfile" },
       { icon: faCreditCard, text: "Payment",link:"/DriverPayment" },
-      { icon: faCommentDots, text: "Messages",link:"/DriverMessages" },
+      { icon: faCommentDots, text: "Notifications",link:"/DriverNotifications" },
       { icon: faFile, text: "Appeal",link:"/DriverAppeal" },
       { icon: faGear, text: "Settings",link: "/DriverSettings"},
     ],
@@ -37,7 +37,7 @@ function Slidebar({ messages, role }) {
     Admin: [
       { icon: faTableColumns, text: "Overview",link:"/AdminOverview" },
       { icon: faChartLine, text: "higher police",link:"/AdminHigherPolice" },
-      { icon: faCommentDots, text: "Messages",link:"/AdminMessages" },
+      { icon: faCommentDots, text: "Notifications",link:"/PoliceNotifications" },
       { icon: faPlusCircle, text: "traffic police",link:"/AdminTrafficPolice" },
       { icon: faGear, text: "Settings",link:"/AdminSettings" },
       { icon: faUser, text: "Profile",link:"/AdminProfile" },
@@ -52,7 +52,7 @@ function Slidebar({ messages, role }) {
       { icon: faUser, text: "Drivers",link:"/SuperAdminDrivers" },
       { icon: faClipboard, text: "Police",link:"/SuperAdminOfficers" },
       { icon: faChartLine, text: "Analytics",link:"/SuperAdminAnalytics" },
-      { icon: faCommentDots, text: "Messages",link:"/SuperAdminMessages" },
+      { icon: faCommentDots, text: "Notifications",link:"/PoliceNotifications" },
       { icon: faGear, text: "Settings",link:"/SuperAdminSettings" },
       { icon: faUser, text: "Profile",link:"/SuperAdminProfile" },
       
@@ -61,7 +61,7 @@ function Slidebar({ messages, role }) {
     Officer: [
       { icon: faTableColumns, text: "Overview",link:"/OfficerOverview" },
       { icon: faDashboard, text: "Dashboard",link:"/OfficerDashboard" },
-      { icon: faBell, text: "Notifications",link:"/OfficerNotifications" },
+      { icon: faBell, text: "Notifications",link:"/PoliceNotifications" },
       { icon: faGear, text: "Settings",link:"/OfficerSettings" },
       { icon: faUser, text: "Profile",link:"/OfficerProfile" },
     ],
@@ -70,6 +70,7 @@ function Slidebar({ messages, role }) {
       { icon: faTableList, text: "Fines",link:"/ManageChargedFines" },
       { icon: faUser, text: "Traffic Officers",link:"/ManageTrafficPolice" },
       { icon: faUser, text: "Profile",link:"/HigherOfficerProfile" },
+      { icon: faBell, text: "Notifications",link:"/PoliceNotifications" },
       ],
   };
 

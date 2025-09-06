@@ -16,7 +16,7 @@ function SuperAdminRoutes() {
       <Route path="/SuperAdminSettings" element={<MainContent role={role} type="Settings" />} />
       <Route path="/SuperAdminReport" element={<MainContent role={role} type="Report" />} />
       <Route path="/SuperAdminOfficers" element={<MainContent role={role} type="Officers" />} />
-      <Route path="/SuperAdminMessages" element={<MainContent role={role} type="Messages" />} />
+      <Route path="/PoliceNotifications" element={<MainContent role={role} type="Notifications" />} />
       <Route path="/SuperAdminFines" element={<MainContent role={role} type="Fines" />} />
       <Route path="/SuperAdminDrivers" element={<MainContent role={role}  type="Drivers" />} />
       <Route path="/SuperAdminAdmins" element={<MainContent role={role} type="Admins" />} />

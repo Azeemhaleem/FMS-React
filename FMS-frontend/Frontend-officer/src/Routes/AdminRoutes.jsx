@@ -15,7 +15,7 @@ function AdminRoutes() {
       <Route path="/AdminSettings" element={<MainContent role={role} type="Settings" />} />
       <Route path="/AdminReport" element={<MainContent role={role} type="Report" />} />
       <Route path="/AdminOfficers" element={<MainContent role={role} type="Officers" />} />
-      <Route path="/AdminMessages" element={<MainContent role={role} type="Messages" />} />
+      <Route path="/PoliceNotifications" element={<MainContent role={role} type="Notifications" />} />
       <Route path="/AdminDrivers" element={<MainContent role={role} type="Drivers" />} />
       <Route path="/AdminTrafficPolice" element={<MainContent role={role} type="trafficPolice" />} />
       <Route path="/AdminHigherPolice" element={<MainContent role={role} type="higherPolice" />} />
