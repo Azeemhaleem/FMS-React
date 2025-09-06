@@ -112,7 +112,7 @@ class HPoliceDeleteFineController extends Controller
     public function declineFineDeletion(Request $request)
     {
         $request->validate([
-            'fine_id' => 'required|exists:charged_fines,fine_id',
+            'fine_id' => 'required|exists:charged_fines,id',
         ]);
 
         $higherOfficer = $request->user();
