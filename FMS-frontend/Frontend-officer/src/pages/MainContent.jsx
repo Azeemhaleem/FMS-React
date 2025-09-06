@@ -102,7 +102,7 @@ function MainContent({ username,image,role,type }) {
         </div>
 
 
-        <div className="col-9" style={{marginTop:"3%",gap:"10px",marginLeft:"5%"}}>
+        <div className="col-9 mb-4" style={{marginTop:"3%",gap:"10px",marginLeft:"5%"}}>
           {/* <h2 className="pt-2 px-0 m-0">
             <b>{type}</b>
           </h2>
