@@ -4,6 +4,7 @@ namespace App\Http\Controllers\admin;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use App\Notifications\SystemEventNotification;
 
 use App\Services\PoliceHierarchyService;
 use App\Models\HigherPoliceTrafficPolice;
@@ -88,6 +89,43 @@ class ReassigningTrafficOfficerController extends Controller
         $newRecord->assigned_at = now();
         $newRecord->save();
 
+       
+        // Notify traffic officer
+        $tofficer->notify(new SystemEventNotification(
+            'You have been reassigned to Higher Officer '.$validated['new_higher_officer_police_id'].'.',
+            'officer.reassigned',
+            [
+                'old_higher' => $assignedHOfficer->policeInDept->police_id ?? null,
+                'new_higher' => $validated['new_higher_officer_police_id'],
+                'assignment_id' => $newRecord->id,
+            ]
+        ));
+
+        // Notify old higher officer
+        if ($assignedHOfficer) {
+            $assignedHOfficer->notify(new SystemEventNotification(
+                'Traffic officer ' . $validated['traffic_officer_police_id'] . ' has been reassigned away from you.',
+                'officer.reassigned_out',
+                [
+                    'traffic' => $validated['traffic_officer_police_id'],
+                    'new_higher' => $validated['new_higher_officer_police_id'],
+                    'assignment_id' => $newRecord->id,
+                ]
+            ));
+        }
+
+        // Notify new higher officer
+        $newHOfficer->notify(new SystemEventNotification(
+            'Traffic officer ' . $validated['traffic_officer_police_id'] . ' has been assigned to you.',
+            'officer.reassigned_in',
+            [
+                'traffic' => $validated['traffic_officer_police_id'],
+                'old_higher' => $assignedHOfficer?->policeInDept?->police_id,
+                'assignment_id' => $newRecord->id,
+            ]
+        ));
+
+        
         return response()->json([
             'message' => 'Traffic Officer Reassigned Successfully to ' . $validated['new_higher_officer_police_id'],
         ], 200);

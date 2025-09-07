@@ -8,6 +8,7 @@ use Illuminate\Validation\Rules\Password as PasswordRules;
 
 use App\Models\driverInDept;
 use App\Services\ProfileImageService;
+use App\Notifications\DriverEventNotification;
 use Illuminate\Support\Facades\Storage;
 
 use App\Models\DriverUser;
@@ -75,10 +76,16 @@ public function login(Request $request) {
         $user->save();
 
         $user->tokens()->where('id', '!=', $request->user()->currentAccessToken()->id)->delete();
-
+        $user->notify(new DriverEventNotification(
+            message: 'Your password was changed successfully.',
+            type: 'profile.updated',
+            meta: ['field' => 'password']
+        ));
         return response()->json([
             'message' => 'Password changed successfully.'
         ], 200);
+
+        
     }
 
     public function changerUsername(Request $request) {
@@ -89,9 +96,16 @@ public function login(Request $request) {
         $user = $request->user();
         $user->username = $validatedData['username'];
         $user->save();
+        $user->notify(new DriverEventNotification(
+        message: 'Your username was changed successfully.',
+        type: 'profile.updated',
+        meta: ['field' => 'username', 'new_username' => $validatedData['username']]
+        ));
         return response()->json([
             'messege' => 'Username changed successfully'
         ], 200);
+        
+
     }
 
     public function uploadProfileImage(Request $request) {

@@ -56,7 +56,7 @@ class DeleteFineController extends Controller
 
             if (!$higherOfficer) {
                 DB::rollBack();
-                Log::error("Data Inconsistency: PoliceUser record not found for higher officer user id: {$higherOfficerUserId}");
+                Log::error("Data Inconsistency: No higher officer found for traffic officer user id: {$trafficOfficer->id}");
                 return response()->json(['message' => 'Could not find user account for the assigned higher officer.'], 500);
             }
 
