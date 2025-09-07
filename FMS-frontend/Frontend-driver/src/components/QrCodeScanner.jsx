@@ -1,33 +1,54 @@
 import { Html5QrcodeScanner } from "html5-qrcode";
-import { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 
 function QrCodeScanner({ setScanResult }) {
+    const scannerRef = useRef(null);
+
     useEffect(() => {
-        const scanner = new Html5QrcodeScanner('render', {
-            qrbox: {
-                width: 500,
-                height: 500,
+        // Initialize scanner but don't start it automatically
+        scannerRef.current = new Html5QrcodeScanner(
+            'render',
+            {
+                qrbox: { width: 500, height: 500 },
+                fps: 5,
             },
-            fps: 5,
-        });
+            false // verbose = false
+        );
 
-        scanner.render(success, error);
-
-        function success(result) {
-            scanner.clear();
-            setScanResult(result);
-        }
-
-        function error(err) {
-            console.warn(err);
-        }
-
+        // Cleanup function
         return () => {
-            scanner.clear().catch(err => console.warn('Failed to clear scanner:', err));
+            if (scannerRef.current) {
+                scannerRef.current.clear().catch(err =>
+                    console.warn('Failed to clear scanner:', err)
+                );
+            }
         };
     }, [setScanResult]);
 
-    return <div id="render"></div>;
+    // Function to start scanning manually
+    const startScanning = () => {
+        if (scannerRef.current) {
+            scannerRef.current.render(
+                (result) => {
+                    setScanResult(result);
+                },
+                (error) => {
+                    console.warn(error);
+                }
+            );
+        }
+    };
+    useEffect(() => {
+        return () => {
+            startScanning();
+        }
+    }, []);
+
+    return (
+        <div>
+            <div id="render"></div>
+        </div>
+    );
 }
 
 export default QrCodeScanner;

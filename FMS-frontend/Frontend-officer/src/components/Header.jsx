@@ -1,152 +1,168 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from 'react';
 import { Link } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
-import api from "../api/axios.jsx";
-import default_image from "../assets/default_user.svg";
+import api from '../api/axios.jsx';
+import default_image from '../assets/default_user.svg';
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {faSignOut, faHome} from "@fortawesome/free-solid-svg-icons";
 
-const toAbsolute = (path) => {
-  if (!path) return null;
-  if (/^https?:\/\//i.test(path)) return path;
-  const base = (api.defaults?.baseURL || "").replace(/\/$/, "");
-  return `${base}${path.startsWith("/") ? "" : "/"}${path}`;
-};
-const toTitle = (s) => (s || "").replace(/_/g, " ").replace(/\b\w/g, (m) => m.toUpperCase());
 
 function Header({ username, role }) {
-  const [profileImage, setProfileImage] = useState(
-    () => localStorage.getItem("police_profile_img") || default_image
-  );
-  const [displayName, setDisplayName] = useState(username || "");
 
-  const token = (() => {
+  const [profileImage, setProfileImage] = useState(default_image);
+
+  const getToken = () => {
     try {
-      const raw = localStorage.getItem("token");
-      if (raw && !raw.startsWith("{") && !raw.startsWith("[")) return raw;
-      return raw ? JSON.parse(raw) : null;
-    } catch {
+      const tokenString = localStorage.getItem('token');
+      if (tokenString && !tokenString.startsWith('{') && !tokenString.startsWith('[')) {
+        return tokenString;
+      }
+      return tokenString ? JSON.parse(tokenString) : null;
+    } catch (error) {
+      console.error('Error parsing token:', error);
       return null;
     }
-  })();
+  };
+  const token = getToken();
+  const getUser = () => {
+    try {
+      const userString = localStorage.getItem('user');
+      if (userString && !userString.startsWith('{') && !userString.startsWith('[')) {
+        return { username: userString };
+      }
+      return userString ? JSON.parse(userString) : null;
+    } catch (error) {
+      console.error('Error parsing user:', error);
+      return null;
+    }
+  };
+
+  const user = getUser();
 
   useEffect(() => {
-    // 1) greet with cached minimal user if present
-    try {
-      const cached = JSON.parse(localStorage.getItem("user_min") || "null");
-      if (cached?.full_name) setDisplayName(cached.full_name);
-      else if (cached?.user_name) setDisplayName(cached.user_name);
-    } catch {}
 
-    // 2) always try to fetch avatar when authenticated (works for admin/super_admin/officers)
     if (!token) {
       setProfileImage(default_image);
+      return; // ⛔ Don't proceed if token is missing
+    }
+
+    if (!user) {
+      console.warn('Unauthorized access attempt');
       return;
     }
-    (async () => {
+    const role = localStorage.getItem('role');
+    async function getProfilePic() {
       try {
-        const res = await api.get("/police/get-profile-image", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        if (res.status === 200) {
-          const full = toAbsolute(res.data?.path);
-          if (full) {
-            const bust = `${full}${full.includes("?") ? "&" : "?"}t=${Date.now()}`;
-            setProfileImage(bust);
-            try { localStorage.setItem("police_profile_img", bust); } catch {}
+        const endpoint =
+            role === 'driver'
+                ? '/driver/get-profile-image'
+                : '/police/get-profile-image';
+        const response = await api.get(endpoint, {
+          headers: {
+            Authorization: `Bearer ${token}`
           }
-        }
-      } catch (e) {
-        // keep default silently
-      }
-    })();
-  }, [token]);
+        });
 
-  // react to image updates + cross-tab sync
-  useEffect(() => {
-    const onImgUpdated = (e) => {
-      const url = e?.detail?.url;
-      if (url) setProfileImage(url);
+        if (response.status === 200) {
+          const imagePath = response.data.path;
+          const fullImageUrl = `http://127.0.0.1:8000${imagePath}?t=${new Date().getTime()}`;
+          setProfileImage(fullImageUrl);
+        }
+      } catch (error) {
+        console.error('Profile Image Failed to load:', error.response?.data || error.message);
+      }
+    }
+
+    getProfilePic();
+
+    const handleProfileImageUpdate = () => {
+      getProfilePic(); // refetch the image
     };
-    const onStorage = (e) => {
-      if (e.key === "police_profile_img" && e.newValue) setProfileImage(e.newValue);
-    };
-    window.addEventListener("profile-image-updated", onImgUpdated);
-    window.addEventListener("storage", onStorage);
+
+    window.addEventListener('profile-image-updated', handleProfileImageUpdate);
+
     return () => {
-      window.removeEventListener("profile-image-updated", onImgUpdated);
-      window.removeEventListener("storage", onStorage);
+      window.removeEventListener('profile-image-updated', handleProfileImageUpdate);
     };
   }, []);
 
-  const rawRole = role || localStorage.getItem("role") || "Officer";
-  const r = toTitle(rawRole); // e.g., "Super Admin", "Higher Officer", "Traffic Officer", "Admin", "Officer"
-
-  const portalHeading = (() => {
-    const low = rawRole.toLowerCase();
-    if (low.includes("super")) return ["Super Admin Portal", "/SuperAdminOverview"];
-    if (low === "admin") return ["Admin Portal", "/AdminOverview"];
-    if (low.includes("higher")) return ["Higher Officer Portal", "/HigherOfficerProfile"];
-    if (low.includes("officer")) return ["Officer Portal", "/OfficerOverview"];
-    return ["Police Portal", "/OfficerOverview"];
-  })();
-  const [portalTitle, portalLink] = portalHeading;
 
   return (
-    <header className="header">
-      <div className="header-right">
-        <nav className="nav-bar">
-          <Link to={portalLink} style={{ textDecoration: "none", color: "black" }}>
-            <h2 className="m-3 d-none d-md-block"><b>{portalTitle}</b></h2>
-          </Link>
+      <header className="header">
 
-          <div className="navbarlinks mt-3" style={{ marginLeft: "5%" }}>
-            <p className="navbarlink"><a href="/home" id="navlinks"><b>Home</b></a></p>
-
-            <p className="navbarlink">
-              <a
-                href="#"
-                id="navlinks"
-                title="Logout"
-                style={{ cursor: "pointer" }}
-                onClick={(e) => {
-                  e.preventDefault();
-                  localStorage.removeItem("token");
-                  localStorage.removeItem("user");
-                  localStorage.removeItem("user_min");            // ✅ clear cached name
-                  localStorage.removeItem("police_profile_img");  // ✅ clear cached avatar
-                  window.location.href = "/loginPolice";
-                }}
-              >
-                <b>Logout</b>
-              </a>
-            </p>
-
-            <p className="navbarlink text-secondary d-flex pe-1 me-1">
-              <span className="name d-block pe-2">
-                Hey,<b style={{ color: "black" }}>{displayName || username || "User"}</b>
-                <br />{r}
-              </span>
-              <Link
-                to={
-                  rawRole.toLowerCase().includes("higher")
-                    ? "/HigherOfficerProfile"
-                    : rawRole.toLowerCase() === "admin" || rawRole.toLowerCase().includes("super")
-                    ? "/AdminProfile"
-                    : "/OfficerProfile"
-                }
-                className="profile-img-link"
-              >
-                <img
-                  src={profileImage}
-                  onError={(e) => { e.currentTarget.src = default_image; }}
-                  alt="Profile"
-                  style={{ width: 48, height: 48, aspectRatio: "1 / 1", borderRadius: "50%", objectFit: "cover", display: "block" }}
-                />
+        <div>
+          <div className="header-right" >
+            <nav className="nav-bar">
+              <Link to={
+                role === 'Admin' ? '/AdminOverview'
+                    : role === 'SuperAdmin' ? '/SuperAdminOverview'
+                        : role === 'HigherOfficer' ? '/HigherOfficerProfile'
+                            : role === 'Officer' ? '/OfficerOverview'
+                                : role === 'Driver' ? '/DriverOverview'
+                                    : null
+              } style={{ textDecoration: "none", color: "black" }}>
+                <h2 className="m-4 d-none d-md-block ">
+                  <b>{role} Portal</b>
+                </h2>
               </Link>
-            </p>
+
+              <div className="navbarlinks mt-2" style={{marginLeft:"5%"}}>
+                <p className="navbarlink fs-5 mt-2">
+                  <a href="/home" id="navlinks">
+                    <FontAwesomeIcon icon={faHome} className="pe-1"/>
+                    <b>Home</b>
+                  </a>
+                </p>
+
+                <p className="navbarlink fs-5 mt-2">
+                  <a
+                      href="#"
+                      id="navlinks"
+                      title="Logout"
+                      style={{ cursor: "pointer" }}
+                      onClick={(e) => {
+                        e.preventDefault(); // Prevent default link behavior
+                        localStorage.removeItem('token');
+                        localStorage.removeItem('user');
+                        window.location.href = "/loginPolice"; // Redirect to home
+                      }}
+                  >
+                    <FontAwesomeIcon icon={faSignOut} className="pe-1"/>
+                    <b>Logout</b>
+                  </a>
+                </p>
+
+
+                <p className="navbarlink text-secondary d-flex pe-1 me-1">
+                  <p className="name d-block pe-2 mt-1">
+                    Hey,<b style={{ color: "black" }}>{username}</b>
+                    <br />
+                    {role}
+                  </p>
+                  <Link to={
+                    role === 'Admin' ? '/AdminProfile'
+                        : role === 'SuperAdmin' ? '/SuperAdminProfile'
+                            : role === 'HigherOfficer' ? '/HigherOfficerProfile'
+                                : role === 'Officer' ? '/OfficerProfile'
+                                    : role === 'Driver' ? '/DriverProfile'
+                                        : null
+                  } className="profile-img-link" >
+                    <img
+                        src={profileImage}
+                        onError={(e) => { e.target.src = default_image; }}
+                        alt=""
+                        width="50px"
+                        height="50px"
+                        className="rounded-circle d-inline-flex"
+                    />
+                  </Link>
+                </p>
+
+              </div>
+            </nav>
           </div>
-        </nav>
-      </div>
-    </header>
+        </div>
+      </header>
   );
 }
 

@@ -1,33 +1,58 @@
 import { Html5QrcodeScanner } from "html5-qrcode";
-import { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 
 function QrCodeScanner({ setScanResult }) {
+    const scannerRef = useRef(null);
+    const isInitialized = useRef(false);
+
     useEffect(() => {
-        const scanner = new Html5QrcodeScanner('render', {
-            qrbox: {
-                width: 500,
-                height: 500,
+        // Prevent multiple initializations
+        if (isInitialized.current) {
+            return;
+        }
+
+        // Mark as initialized immediately
+        isInitialized.current = true;
+
+        // Initialize scanner
+        const scanner = new Html5QrcodeScanner(
+            'render',
+            {
+                qrbox: { width: 500, height: 500 },
+                fps: 5,
             },
-            fps: 5,
-        });
+            false
+        );
 
-        scanner.render(success, error);
+        scannerRef.current = scanner;
 
-        function success(result) {
-            scanner.clear();
-            setScanResult(result);
-        }
+        // Start scanning
+        scanner.render(
+            (result) => {
+                setScanResult(result);
+            },
+            (error) => {
+                console.warn(error);
+            }
+        );
 
-        function error(err) {
-            console.warn(err);
-        }
-
+        // Cleanup function
         return () => {
-            scanner.clear().catch(err => console.warn('Failed to clear scanner:', err));
+            if (scannerRef.current) {
+                scannerRef.current.clear().catch(err =>
+                    console.warn('Failed to clear scanner:', err)
+                );
+                scannerRef.current = null;
+                isInitialized.current = false;
+            }
         };
-    }, [setScanResult]);
+    }, []); // Empty dependency array - only run once
 
-    return <div id="render"></div>;
+    return (
+        <div>
+            <div id="render"></div>
+        </div>
+    );
 }
 
 export default QrCodeScanner;

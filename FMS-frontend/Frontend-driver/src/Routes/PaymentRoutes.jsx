@@ -5,6 +5,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import CheckoutForm from "../stripe/CheckoutForm.jsx";
 import Complete from "../stripe/Complete.jsx";
 import '../stripe/PaymentRoutes.css'
+import api from "../api/axios";
 
 // Stripe publishable key
 const stripePromise = loadStripe(import.meta.env.STRIPE_PUBLISHABLE_KEY);

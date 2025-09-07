@@ -1,8 +1,8 @@
 #render {
-    max-width: fit-content;
+    max-width: 100%;
     max-height: 40vh !important;
-    margin-left: 7% !important;
 }
+
 #render button {
     background-color: #555b63;
     font-size: medium !important;
@@ -10,6 +10,10 @@
     padding: 5px 10px;
     border-radius: 3px;
     border: none;
+}
+
+#render__scan_region video{
+    width: 100% !important;
 }
 
 #render img {
@@ -45,6 +49,10 @@
 
 .input-group {
     border-radius: 8px;
+}
+
+#Fine{
+    width: 100% !important;
 }
 
 .input-group .form-control {
@@ -251,4 +259,12 @@ label:hover .overlay-hover {
         right: 33% !important;
     }
 }
+
+/* Optional: card background used in this page */
+.card-softgradient { background: linear-gradient(135deg, #d9eaff 0%, #ffffff 100%); }
+
+.card-softgradient { background: linear-gradient(135deg, #d9eaff 0%, #ffffff 100%); }
+.table-fixed { table-layout: fixed; width: 100%; }
+.nowrap { white-space: nowrap; }
+.truncate { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
