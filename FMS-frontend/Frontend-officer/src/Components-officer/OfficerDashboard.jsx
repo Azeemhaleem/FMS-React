@@ -30,7 +30,6 @@ function OfficerDashboard() {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
 
-            // Ensure it's an array
             if (Array.isArray(response.data)) {
                 setFines(response.data);
             } else if (Array.isArray(response.data.fines)) {
@@ -76,11 +75,13 @@ function OfficerDashboard() {
                         // Check if response.data.driver exists and has required fields
                         const driver = response?.data;
                         if (driver) {
-                            const { license_number, full_name, license_expiry_date } = driver;
+                            const { license_no,license_id_no, full_name, license_expiry_date,license_issued_date } = driver;
 
                             setSelectedDriver({
+                                license_number: license_no,
                                 full_name: full_name || "N/A", // Default to "N/A" if full_name is missing
-                                license_number: license_number || "N/A", // Default to "N/A" if license_number is missing
+                                license_id_no: license_id_no || "N/A",
+                                license_issued_date: license_issued_date || "N/A",// Default to "N/A" if license_number is missing
                                 license_expiry_date: license_expiry_date || "N/A", // Default to "N/A" if license_expiry_date is null
                             });
                         } else {
@@ -107,7 +108,7 @@ function OfficerDashboard() {
     const formik = useFormik({
         initialValues: {
             Fine: "",
-            DriverQr: selectedDriver?.license_no || "",
+            DriverQr: selectedDriver?.license_number || "",
         },
         validationSchema: Yup.object({
             Fine: Yup.string().required("Select a Fine"),
@@ -115,7 +116,7 @@ function OfficerDashboard() {
         onSubmit: (values) => {
             const formData = {
                 ...values,
-                DriverQr: selectedDriver?.license_no
+                DriverQr: selectedDriver?.license_number
             };
             setSubmittedData(formData);
             setIssueFine(true);
@@ -158,8 +159,8 @@ function OfficerDashboard() {
         try {
             // Make the API call to charge the fine
             const response = await api.post('/charge-fine', {
-                fine_id: selectedFine.id,  // Fine ID from selected fine
-                driver_license_number: selectedDriver.license_number,  // License number from selected driver
+                fine_id: selectedFine.id,
+                driver_license_number: selectedDriver.license_number,
             }, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -168,7 +169,7 @@ function OfficerDashboard() {
 
             // Check if the response is successful
             if (response.status === 200) {
-                const { fine_id, driver_license_number } = response.data;  // Destructuring the response to get fine_id and driver_license_number
+                const { fine_id, driver_license_number } = response.data;
 
                 // Log or use the fine_id and driver_license_number
                 console.log("Fine ID:", fine_id);
@@ -198,30 +199,102 @@ function OfficerDashboard() {
 
 
     return (
-        <>
+        <div className="mb-5">
             {!scanResult && !selectedDriver && !add && (
-                <div id="ScanPage" className="bg-white bg-opacity-25 p-3 rounded justify-content-center" style={{ width: "85%", height: "60vh" }}>
-                    <div className="row-cols-lg-auto d-lg-flex d-sm-block justify-content-center align-items-center mt-2">
-                        <div className="Scan-col col-lg-5" style={{ height: "49vh" }}>
-                            <h4>Scan Driver License QR here</h4>
-                            <div className="Scanner bg-white pe-lg-4 rounded shadow d-flex justify-content-center align-items-center"
-                                 style={{ height: "47vh", width: "85%" }}>
-                                <QrCodeScanner setScanResult={setScanResult} />
+                <div
+                    id="ScanPage"
+                    className="bg-white bg-opacity-25 p-3 rounded d-flex justify-content-center align-items-center mx-auto"
+                    style={{ width: "80%", height: "65vh" }}
+                >
+                    {/* Main Content */}
+                    <main className="w-100">
+                        <div className="container h-100 d-flex align-items-center">
+                            <div className="row g-4 justify-content-center w-100">
+                                {/* Card: Scan Driver License QR */}
+                                <div className="col-12 col-lg-6 d-flex">
+                                    <div className="card shadow-sm w-100">
+                                        {/* Make card-body a flex column with center alignment */}
+                                        <div className="card-body d-flex flex-column justify-content-center align-items-center text-center">
+                                            <div className="display-5 text-primary mb-3">
+                                                <i className="bi bi-qr-code" />
+                                            </div>
+
+                                            {/* Scanner container centered */}
+                                            <div
+                                                className="d-flex align-items-center justify-content-center mb-3 mx-auto"
+                                                style={{ height: 260, width: "100%" }}
+                                            >
+                                                <div className="d-flex align-items-center justify-content-center mx-5">
+                                                    <QrCodeScanner setScanResult={setScanResult} />
+                                                </div>
+                                            </div>
+
+                                            <h3 className="card-title fw-semibold">Scan Driver License QR</h3>
+                                            <p className="text-muted mb-1">
+                                                Scan a driver&rsquo;s QR code to access license information
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Card: Check Fines Info */}
+                                <div className="col-12 col-lg-6 d-flex">
+                                    <div className="card shadow-sm w-100">
+                                        <div className="card-body text-center">
+                                            <div className="display-5 text-primary mb-3">
+                                                <i className="bi bi-file-earmark-text" />
+                                            </div>
+                                            <a
+                                                href="/assets/fines_list.pdf"
+                                                download="fines_list.pdf"
+                                                className="text-primary-emphasis text-decoration-none"
+                                            >
+                                                <div
+                                                    className="help-content bg-white px-lg-4 d-flex justify-content-center align-items-center mx-auto"
+                                                    style={{ height: "35vh", width: "85%" }}
+                                                >
+                                                    <FontAwesomeIcon
+                                                        icon={faFileLines}
+                                                        style={{ fontSize: "20vh" }}
+                                                        className="pdf-icon"
+                                                    />
+                                                </div>
+                                            </a>
+                                            <h3 className="card-title fw-semibold mt-3">
+                                                Check Fines Info
+                                            </h3>
+                                            <p className="text-muted mb-1">
+                                                View driver&rsquo;s fines and payment history
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-
-                        <div className="help-col col-lg-5 text-primary-emphasis " style={{ height: "49vh" }}>
-                            <h4 className="text-primary-emphasis">Check Fines Details Info</h4>
-                            <a href="/assets/fines_list.pdf" download="fines_list.pdf" className="text-primary-emphasis text-decoration-none">
-                            <div className="help-content bg-white px-lg-4 rounded shadow d-flex justify-content-center align-items-center"
-                                     style={{ height: "47vh", width: "85%" }}>
-                                    <FontAwesomeIcon icon={faFileLines} style={{ fontSize: "17vh" }} className="pdf-icon" />
-                                </div>
-                            </a>
-                        </div>
-                    </div>
+                    </main>
                 </div>
             )}
+
+
+            {/*<div className="row-cols-lg-auto d-lg-flex d-sm-block justify-content-center align-items-center mt-2">*/}
+            {/*    <div className="Scan-col col-lg-5" style={{ height: "49vh" }}>*/}
+            {/*        <h4>Scan Driver License QR here</h4>*/}
+            {/*        <div className="Scanner bg-white pe-lg-4 rounded shadow d-flex justify-content-center align-items-center"*/}
+            {/*             style={{ height: "47vh", width: "85%" }}>*/}
+            {/*            <QrCodeScanner setScanResult={setScanResult} />*/}
+            {/*        </div>*/}
+            {/*    </div>*/}
+
+            {/*    <div className="help-col col-lg-5 text-primary-emphasis " style={{ height: "49vh" }}>*/}
+            {/*        <h4 className="text-primary-emphasis">Check Fines Details Info</h4>*/}
+            {/*        <a href="/assets/fines_list.pdf" download="fines_list.pdf" className="text-primary-emphasis text-decoration-none">*/}
+            {/*        <div className="help-content bg-white px-lg-4 rounded shadow d-flex justify-content-center align-items-center"*/}
+            {/*                 style={{ height: "47vh", width: "85%" }}>*/}
+            {/*                <FontAwesomeIcon icon={faFileLines} style={{ fontSize: "17vh" }} className="pdf-icon" />*/}
+            {/*            </div>*/}
+            {/*        </a>*/}
+            {/*    </div>*/}
+            {/*</div>*/}
 
             {scanResult && selectedDriver && !add && (
                 <div id="SuccessPage" className="d-flex justify-content-center align-items-center">
@@ -240,17 +313,21 @@ function OfficerDashboard() {
             {selectedDriver && add && (
                 <div id="ConfirmPage" className="d-flex justify-content-center align-content-center">
                     <div className="row">
-                        <div className="card mt-4"
-                             style={{ backgroundColor: "#f7f9fc", padding: "20px", fontSize: "medium", width: "150vh" }}>
+                        <div className="card mt-4 mx-auto"
+                             style={{ backgroundColor: "#f7f9fc", padding: "20px", fontSize: "medium", width: "135vh" }}>
                             <h4>Driver Details</h4>
-                            {/*<div>*/}
-                            {/*    <span className="info-label">Driver Name:</span>*/}
-                            {/*    <div className="info-value"> {selectedDriver.full_name}</div>*/}
-                            {/*</div>*/}
-                            {/*<div>*/}
-                            {/*    <span className="info-label">License Number:</span>*/}
-                            {/*    <div className="info-value"> {selectedDriver.license_no}</div>*/}
-                            {/*</div>*/}
+                            <div>
+                                <span className="info-label">Driver Name:</span>
+                                <div className="info-value"> {selectedDriver.full_name}</div>
+                            </div>
+                            <div>
+                                <span className="info-label">License Number:</span>
+                                <div className="info-value"> {selectedDriver.license_id_no || "N/A"}</div>
+                            </div>
+                            <div>
+                                <span className="info-label">License Issued Date:</span>
+                                <div className="info-value">{selectedDriver.license_issued_date || "N/A"}</div>
+                            </div>
                             <div>
                                 <span className="info-label">License Expiry Date:</span>
                                 <div className="info-value">{selectedDriver.license_expiry_date || "N/A"}</div>
@@ -263,7 +340,7 @@ function OfficerDashboard() {
                                 if (formik.isValid) handleAdd();
                                 formik.handleSubmit(e);
                             }}>
-                                <Form.Group controlId="Fine" className="mt-3">
+                                <Form.Group controlId="Fine" className="mt-1">
                                     <Form.Label>Select Fine</Form.Label>
                                     <Form.Control
                                         as="select"
@@ -282,7 +359,7 @@ function OfficerDashboard() {
                                 </Form.Group>
 
                                 <div className="row">
-                                    <div className="d-flex justify-content-end mt-3">
+                                    <div className="d-flex justify-content-end mt-4">
                                         <button className="btn btn-secondary btn-lg me-3" type="reset"
                                                 style={{ fontSize: "medium" }}
                                                 onClick={closeModal}>
@@ -317,7 +394,7 @@ function OfficerDashboard() {
                     </div>
                 </div>
             )}
-        </>
+        </div>
     );
 }
 
