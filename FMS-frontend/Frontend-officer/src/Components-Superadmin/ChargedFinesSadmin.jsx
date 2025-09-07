@@ -166,7 +166,7 @@ export default function ChargedFinesSadmin() {
   // --- UI
   return (
     <div
-      className="container mb-5 mt-5 p-5"
+      className="container mb-5 mt-3 p-5"
       style={{ backgroundColor: "#d3e2fd", padding: "1rem", borderRadius: "1rem" }}
     >
       {/* Toggle */}
