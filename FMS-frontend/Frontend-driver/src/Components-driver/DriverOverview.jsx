@@ -162,7 +162,6 @@ export default function DriverOverview() {
             issued_at: x.issued_at,
             paid_at: x.paid_at,
             expires_at: x.expires_at,
-            // police_user_id: x.police_user_id,
             police_user_id: x.police_user_id,
           }))
           .sort(

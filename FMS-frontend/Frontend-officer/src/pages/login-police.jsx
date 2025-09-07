@@ -91,7 +91,7 @@ const LoginPolice = () => {
                     api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
                     switch (role) {
                         case "admin":
-                            navigate("/AdminOverview");
+                            navigate("/AdminOrganize");
                             break;
                         case "traffic_officer":
                             navigate("/OfficerOverview");
