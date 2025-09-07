@@ -5,7 +5,7 @@ namespace App\Http\Controllers\sAdmin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Fine;
-use App\Notifications\Police\SystemEventNotification;
+use App\Notifications\SystemEventNotification;
 
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
