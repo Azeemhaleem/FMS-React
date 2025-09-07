@@ -83,10 +83,10 @@ export default function SuperAdminOfficers() {
       {/* Search card */}
       <div className="card shadow-sm mb-3">
         <div className="card-body">
-          <div className="d-flex flex-column flex-md-row align-items-stretch px-4 mt-4 mb-4">
+          <div className="d-flex px-4 mt-4 mb-4">
             <input
               type="text"
-              className=" form-control me-md-2 mb-2 mb-md-0"
+              className="col-8 form-control me-md-2 mb-2 mb-md-0"
               placeholder="e.g., 1011"
               value={query}
               onChange={(e) => {
@@ -97,7 +97,7 @@ export default function SuperAdminOfficers() {
             />
             <div className="d-grid d-md-flex gap-2">
               <button
-                className="w-25 btn btn-dark"
+                className="w-75 btn btn-dark"
                 onClick={handleSearch}
                 disabled={loading}
               >
