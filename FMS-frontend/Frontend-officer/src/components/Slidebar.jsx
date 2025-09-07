@@ -149,7 +149,6 @@ function Slidebar({ role = "Officer" }) {
                 <span className={isActive ? "fw-semibold text-primary" : "text-dark"}>
                   {item.text}
                 </span>
-
                 {/* Tiny dot for unread notifications */}
                 {item.text.toLowerCase().includes("notifications") && unreadCount > 0 && (
                   <span
@@ -161,7 +160,7 @@ function Slidebar({ role = "Officer" }) {
                       width: 10,
                       height: 8,
                       borderRadius: "50%",
-                      background: "#1f73ff",
+                      background: "#ff1fa5ff", // change to '#fd0da5ff' if you want the driver pink
                     }}
                   />
                 )}
