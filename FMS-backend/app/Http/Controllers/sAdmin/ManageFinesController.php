@@ -5,6 +5,7 @@ namespace App\Http\Controllers\sAdmin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Fine;
+use App\Notifications\Police\SystemEventNotification;
 
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
@@ -28,6 +29,17 @@ class ManageFinesController extends Controller
             return response()->json([
                 'message' => 'Failed to add fine'
             ], 500);
+        }
+
+        try {
+            if ($request->user() instanceof \App\Models\PoliceUser) {
+                $request->user()->notify(new SystemEventNotification(
+                    'Fine Added',
+                    "Name: {$fine->name}\nAmount: {$fine->amount}\nDescription: {$fine->description}"
+                ));
+            }
+        } catch (\Throwable $e) {
+            \Log::warning('Fine add notification failed', ['error' => $e->getMessage()]);
         }
 
         return response()->json([
@@ -92,6 +104,17 @@ class ManageFinesController extends Controller
             ], 200);
         }
 
+        try {
+            if ($request->user() instanceof \App\Models\PoliceUser) {
+                $request->user()->notify(new SystemEventNotification(
+                    'Fine Updated',
+                    "Name: {$fine->name}\nAmount: {$fine->amount}\nDescription: {$fine->description}"
+                ));
+            }
+        } catch (\Throwable $e) {
+            \Log::warning('Fine update notification failed', ['error' => $e->getMessage()]);
+        }
+
         return response()->json([
             'message' => 'Fine updated successfully',
             'fine' => $fine->fresh()
@@ -108,6 +131,17 @@ class ManageFinesController extends Controller
             $fine = Fine::findOrFail($request->fine_id);
             $fine->delete();
 
+            try {
+                if ($request->user() instanceof \App\Models\PoliceUser) {
+                    $request->user()->notify(new SystemEventNotification(
+                        'Fine Deleted',
+                        "Name: {$fine->name}\nAmount: {$fine->amount}\nDescription: {$fine->description}"
+                    ));
+                }
+            } catch (\Throwable $e) {
+                \Log::warning('Fine delete notification failed', ['error' => $e->getMessage()]);
+}
+
             return response()->json([
                 'message' => 'Deleted fine successfully'
             ], 200);
@@ -119,17 +153,23 @@ class ManageFinesController extends Controller
         }
     }
 
-    public function getFineById(Request $request) {
-        $request->validate([
-            'fine_id' => 'bail|required|integer|exists:fines,id',
-        ]);
-
-        $fine = Fine::findOrFail($request->fine_id);
-
-        return response()->json([
-            'fine' => $fine
-        ], 200);
+public function getFineById($fine_id)  // <-- read from URL segment
+{
+    // optional: validate it's an integer
+    if (!ctype_digit((string)$fine_id)) {
+        return response()->json(['message' => 'Invalid fine id'], 422);
     }
+
+    $fine = \App\Models\Fine::find($fine_id);
+
+    if (!$fine) {
+        return response()->json(['message' => 'Fine not found'], 404);
+    }
+
+    return response()->json([
+        'fine' => $fine
+    ], 200);
+}
 
     public function getAllFines() {
         $fines = Fine::all();

@@ -11,6 +11,7 @@ use App\Models\PoliceUser;
 use App\Http\Controllers\Auth\AdminRegistrationController;
 use Illuminate\Support\Facades\Hash;
 use App\Models\Roles;
+use App\Models\HigherPoliceTrafficPolice;
 
 class TrafficPoliceRegistrationController extends Controller
 {
@@ -71,8 +72,42 @@ class TrafficPoliceRegistrationController extends Controller
             $newAssignment->traffic_police_id = $request->traffic_police_id;
             $newAssignment->higher_police_id = $request->higher_police_id;
             $newAssignment->assigned_at = now();
-            $newAssignment->assigned_times = 1;
             $newAssignment->save();
+
+            // Resolve users
+            $trafficUser = $trafficPoliceInDept->policeUser;
+            $higherUser  = $higherPoliceInDept->policeUser;
+
+            // Guard: ensure correct roles exist
+            if (!$trafficUser?->trafficPolice) {
+                return response()->json(['messege' => 'Provided traffic_police_id is not a traffic officer'], 400);
+            }
+            if (!$higherUser?->higherPolice) {
+                return response()->json(['messege' => 'Provided higher_police_id is not a higher officer'], 400);
+            }
+
+            // Notify Traffic Officer
+            $trafficUser->notify(new \App\Notifications\SystemEventNotification(
+                'You have been assigned to Higher Officer ' . $request->higher_police_id . '.',
+                'officer.assigned',
+                [
+                    'higher'  => $request->higher_police_id,
+                    'traffic' => $request->traffic_police_id,
+                    'assignment_id' => $newAssignment->id,
+                ]
+            ));
+
+            // Notify Higher Officer
+            $higherUser->notify(new \App\Notifications\SystemEventNotification(
+                'Traffic officer ' . $request->traffic_police_id . ' has been assigned to you.',
+                'officer.assigned_in',
+                [
+                    'higher'  => $request->higher_police_id,
+                    'traffic' => $request->traffic_police_id,
+                    'assignment_id' => $newAssignment->id,
+                ]
+            ));
+
 
             return response()->json([
                 'message' => 'Traffic police assigned to higher police successfully',

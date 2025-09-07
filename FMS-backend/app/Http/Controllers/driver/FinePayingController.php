@@ -94,6 +94,8 @@ class FinePayingController extends Controller
             Log::error('Stripe Payment Error during processPayment: ' . $e->getMessage());
             return response()->json(['error' => 'Payment processing error', 'message' => $e->getMessage()], 400);
         }
+
+        
     }
 
     public function CheckIfUserHasToPayTheFine(Request $request) {

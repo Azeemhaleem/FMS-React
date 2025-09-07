@@ -24,10 +24,14 @@ class FineDeletionApprovedNotification extends Notification
      *
      * @return array<int, string>
      */
-    public function via(object $notifiable): array
-    {
-        return ['mail'];
+   public function via(object $notifiable): array
+{
+    $channels = ['database'];
+    if (!empty($notifiable->receives_email_notifications)) {
+        $channels[] = 'mail';
     }
+    return $channels;
+}
 
     /**
      * Get the mail representation of the notification.
@@ -46,9 +50,10 @@ class FineDeletionApprovedNotification extends Notification
      * @return array<string, mixed>
      */
     public function toArray(object $notifiable): array
-    {
-        return [
-            //
-        ];
-    }
+{
+    return [
+        'message' => 'Your fine deletion request was approved.',
+        'type'    => 'fine.deletion_approved',
+    ];
+}
 }

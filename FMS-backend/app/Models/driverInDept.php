@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class driverInDept extends Model
 {
-    use softDeletes;
+    use SoftDeletes;
 
     protected static function getEmailbyId($id) {
         return driverInDept::where('id', $id)->first()->email;
