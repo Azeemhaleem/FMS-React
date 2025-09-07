@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
+use App\Notifications\SystemEventNotification;
 use App\Models\Admin;
 use App\Models\HigherPolice;
 use App\Models\PoliceInDept;
@@ -64,6 +65,34 @@ class AdminRegistrationController extends Controller
             $actor = $request->user();
             if ($actor instanceof PoliceUser) {
                 self::logAccountCreation($actor, $user);
+            }
+
+            try {
+                // to the newly created admin user
+                $user->notify(new SystemEventNotification(
+                    message: 'Your admin account has been created.',
+                    type: 'admin.created',
+                    meta: [
+                        'police_id'   => $validated['police_id'],
+                        'username'    => $validated['username'],
+                        'created_by'  => $actor?->id,
+                    ]
+                ));
+
+                // optional: notify the creator as confirmation
+                if ($actor instanceof PoliceUser) {
+                    $actor->notify(new SystemEventNotification(
+                        message: 'Admin account created successfully.',
+                        type: 'admin.created.confirmation',
+                        meta: [
+                            'created_for_user_id' => $user->id,
+                            'police_id'           => $validated['police_id'],
+                            'username'            => $validated['username'],
+                        ]
+                    ));
+                }
+            } catch (\Throwable $e) {
+                \Log::warning('Admin creation notification failed', ['error' => $e->getMessage()]);
             }
         //     return response()->json([
         //         'message' => 'Admin created successfully',
