@@ -35,12 +35,14 @@ function Slidebar({ Notifications, role }) {
     //   { icon: faChartLine, text: "Analytics" },
     // ],
     Admin: [
+      { icon: faUser, text: "AdminOrganize",link:"/AdminOrganize" },
       { icon: faTableColumns, text: "Overview",link:"/AdminOverview" },
       { icon: faChartLine, text: "higher police",link:"/AdminHigherPolice" },
       { icon: faCommentDots, text: "Notifications",link:"/AdminPoliceNotifications" },
       { icon: faPlusCircle, text: "traffic police",link:"/AdminTrafficPolice" },
       { icon: faGear, text: "Settings",link:"/AdminSettings" },
       { icon: faUser, text: "Profile",link:"/AdminProfile" },
+      
     ],
     SuperAdmin: [
       { icon: faTableColumns, text: "Overview",link:"/SuperAdminOverview" },

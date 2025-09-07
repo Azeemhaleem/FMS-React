@@ -12,10 +12,8 @@ function AdminRoutes() {
     <Routes>
 
       <Route path="/AdminOverview" element={<MainContent role={role} type="Overview" />} />
-      <Route path="/AdminReport" element={<MainContent role={role} type="Report" />} />
-      <Route path="/AdminOfficers" element={<MainContent role={role} type="Officers" />} />
       <Route path="/AdminPoliceNotifications" element={<MainContent role={role} type="Notifications" />} />
-      <Route path="/AdminDrivers" element={<MainContent role={role} type="Drivers" />} />
+      <Route path="/AdminOrganize" element={<MainContent role={role} type="AdminOrganize" />} />
       <Route path="/AdminTrafficPolice" element={<MainContent role={role} type="trafficPolice" />} />
       <Route path="/AdminHigherPolice" element={<MainContent role={role} type="higherPolice" />} />
       <Route path="/AssignTrafficPolice" element={<MainContent role={role} type="assignOfficer" />} />
