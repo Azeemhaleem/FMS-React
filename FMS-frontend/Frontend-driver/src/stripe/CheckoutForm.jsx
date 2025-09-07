@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import {PaymentElement, useCheckout,} from '@stripe/react-stripe-js/checkout';
+import api from "../api/axios";
 
 const validateEmail = async (email, checkout) => {
   const updateResult = await checkout.updateEmail(email);

@@ -3,6 +3,8 @@ import { Link } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 import api from '../api/axios.jsx';
 import default_image from '../assets/default_user.svg';
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {faSignOut, faHome} from "@fortawesome/free-solid-svg-icons";
 
 
 function Header({ username, role }) {
@@ -99,19 +101,20 @@ function Header({ username, role }) {
                                 : role === 'Driver' ? '/DriverOverview'
                                     : null
               } style={{ textDecoration: "none", color: "black" }}>
-                <h2 className="m-3 d-none d-md-block">
+                <h2 className="m-4 d-none d-md-block ">
                   <b>{role} Portal</b>
                 </h2>
               </Link>
 
-              <div className="navbarlinks mt-3" style={{marginLeft:"5%"}}>
-                <p className="navbarlink">
+              <div className="navbarlinks mt-2" style={{marginLeft:"5%"}}>
+                <p className="navbarlink fs-5 mt-2">
                   <a href="/home" id="navlinks">
+                    <FontAwesomeIcon icon={faHome} className="pe-1"/>
                     <b>Home</b>
                   </a>
                 </p>
 
-                <p className="navbarlink">
+                <p className="navbarlink fs-5 mt-2">
                   <a
                       href="#"
                       id="navlinks"
@@ -124,13 +127,14 @@ function Header({ username, role }) {
                         window.location.href = "/loginPolice"; // Redirect to home
                       }}
                   >
+                    <FontAwesomeIcon icon={faSignOut} className="pe-1"/>
                     <b>Logout</b>
                   </a>
                 </p>
 
 
                 <p className="navbarlink text-secondary d-flex pe-1 me-1">
-                  <p className="name d-block pe-2">
+                  <p className="name d-block pe-2 mt-1">
                     Hey,<b style={{ color: "black" }}>{username}</b>
                     <br />
                     {role}

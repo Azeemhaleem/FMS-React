@@ -77,9 +77,9 @@ function Slidebar({ messages, role }) {
 
   return (
     <>
-    <nav className="sidebar min-h-screen pb-5">
+    <nav className="sidebar min-h-screen pb-5 mt-3">
   {sidebarOptions[role]?.map((item, index) => (
-    <div key={index} className="sidebar-links mb-2">
+    <div key={index} className="sidebar-links mb-2 ms-3">
     <Link to={item.link}>
       <div style={{ display: "flex", alignItems: "center" }}>
         <FontAwesomeIcon icon={item.icon} style={{ fontSize: "20px", marginRight: "10px" }} />

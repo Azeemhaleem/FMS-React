@@ -69,8 +69,10 @@ class ChargeFineController extends Controller
         }
 
         return response()->json([
-            'license_number' => $driver_in_dept->license_no,
+            'license_no' => $driver_in_dept->license_no,
+            'license_id_no' => $driver_in_dept->licence_id_no,
             'full_name' => $driver_in_dept->full_name,
+            'license_issued_date' => $driver_in_dept->issued_issued_date,
             'license_expiry_date' => $driver_in_dept->license_expiry_date,
         ], 200);
     }
