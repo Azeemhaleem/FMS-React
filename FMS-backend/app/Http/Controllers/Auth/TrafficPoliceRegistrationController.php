@@ -59,7 +59,9 @@ class TrafficPoliceRegistrationController extends Controller
             ], 400);
         }
 
-        $existingAssignment = HigherPoliceTrafficPolice::where('traffic_police_id', $request->traffic_police_id)->first();
+        $existingAssignment = HigherPoliceTrafficPolice::where('traffic_police_id', $request->traffic_police_id)
+            ->whereNull('unassigned_at')
+            ->first();
 
         if ($existingAssignment) {
             return response()->json([
