@@ -1,375 +1,428 @@
-// src/pages/AdminOrganize.jsx
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import api from "../api/axios";
+import "./styles-admin.css"; // keep your existing styles
 
 function friendlyError(err, fallback = "Something went wrong.") {
   const data = err?.response?.data || {};
-  let msg = data.message || data.messege || fallback;
-
-  // pretty-up common framework errors so users don't see raw stack info
-  if (/Class .+ not found/i.test(msg)) {
-    msg = "Server configuration error while processing the request.";
-  } else if (/SQLSTATE|Integrity constraint/i.test(msg)) {
-    msg = "IDs appear invalid or conflict with an existing assignment.";
-  }
+  // also read `error` since some endpoints return it
+  let msg = data.message || data.messege || data.error || fallback;
+  if (/Class .+ not found/i.test(msg)) msg = "Server configuration issue while processing the request.";
+  if (/SQLSTATE|Integrity constraint/i.test(msg)) msg = "IDs appear invalid or conflict with an existing assignment.";
   return msg;
 }
 
-export default function AdminOrganize() {
-  // ASSIGN
-  const [assign, setAssign] = useState({ traffic_police_id: "", higher_police_id: "" });
-  const [assignAlert, setAssignAlert] = useState(null);
-  const [assignErrs, setAssignErrs] = useState({});
-  const [assigning, setAssigning] = useState(false);
+const Card = ({ children, className = "" }) => (
+  <div
+    className={`card shadow-sm border-0 ${className}`}
+    style={{ borderRadius: "1rem", backgroundColor: "#f7f9fc" }}
+  >
+    <div className="card-body p-4 p-sm-5">{children}</div>
+  </div>
+);
 
-  // REASSIGN
-  const [reassign, setReassign] = useState({
-    traffic_officer_police_id: "",
-    current_higher: "",
-    new_higher_officer_police_id: "",
-  });
-  const [reassignAlert, setReassignAlert] = useState(null);
-  const [reErrs, setReErrs] = useState({});
-  const [checking, setChecking] = useState(false);
-  const [reassigning, setReassigning] = useState(false);
+/* ---------- Picker (big equal-height clickable cards, no extra CSS needed) ---------- */
+function ActionPicker({ onPick }) {
+  const ActionCard = ({ emoji, label, desc, action }) => (
+    <button
+      type="button"
+      className="btn p-0 text-start w-100"
+      onClick={() => onPick(action)}
+      style={{ border: "none" }}
+    >
+      <div
+        className="card h-100 border-0 shadow-sm rounded-4"
+        style={{
+          minHeight: 210,
+          transition: "transform .15s ease, box-shadow .15s ease",
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.transform = "translateY(-2px)";
+          e.currentTarget.style.boxShadow = "0 .8rem 1.6rem rgba(0,0,0,.12)";
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.transform = "none";
+          e.currentTarget.style.boxShadow = "";
+        }}
+      >
+        <div className="card-body d-flex flex-column">
+          <div className="d-flex align-items-center mb-3">
+            <span className="fs-1 me-3">{emoji}</span>
+            <h5 className="mb-0">{label}</h5>
+          </div>
+          <div className="flex-grow-1" />
+          <p className="text-muted mb-0">{desc}</p>
+        </div>
+      </div>
+    </button>
+  );
 
-  // WATCH (lookup current higher)
-  const [watchId, setWatchId] = useState("");
-  const [watchResult, setWatchResult] = useState(null);
-  const [watchAlert, setWatchAlert] = useState(null);
-  const [watching, setWatching] = useState(false);
+  return (
+    <>
+      <h2 className="h2 text-center mb-5">Admin • Organize Officers</h2>
 
-  // utils
-  const setA = (k, v) => {
-    setAssign((s) => ({ ...s, [k]: v }));
-    if (assignErrs[k]) setAssignErrs((e) => ({ ...e, [k]: undefined }));
+      <div className="px-5 d-flex gap-2 justify-content-center mb-5 mt-4">
+        <Link to="/AdminHigherPolice" className="btn btn-outline-primary btn-small rounded-pill">
+          Register Higher Officer
+        </Link>
+        <Link to="/AdminTrafficPolice" className="btn btn-outline-primary btn-small rounded-pill">
+          Register Traffic Officer
+        </Link>
+      </div>
+
+      <Card className="text-center">
+        <h4 className="mb-5">Choose an action</h4>
+
+        <div className="row g-4 text-start">
+          <div className="col-12 col-md-6 col-lg-4">
+            <ActionCard
+              emoji="➕"
+              label="Assign Traffic Officer"
+              desc="Link an unassigned traffic officer to a higher officer."
+              action="assign"
+            />
+          </div>
+          <div className="col-12 col-md-6 col-lg-4">
+            <ActionCard
+              emoji="🔁"
+              label="Reassign Traffic Officer"
+              desc="Move a traffic officer from their current higher to a new one."
+              action="reassign"
+            />
+          </div>
+          <div className="col-12 col-md-6 col-lg-4">
+            <ActionCard
+              emoji="🔎"
+              label="Lookup Assignment"
+              desc="See which higher officer a traffic officer is assigned to."
+              action="lookup"
+            />
+          </div>
+        </div>
+
+        <div className="text-muted small mt-3">
+          * All IDs refer to <code>police_in_depts.police_id</code>.
+        </div>
+      </Card>
+    </>
+  );
+}
+
+/* --------------------- Assign form --------------------- */
+function AssignForm({ onBack }) {
+  const [form, setForm] = useState({ traffic_police_id: "", higher_police_id: "" });
+  const [errors, setErrors] = useState({});
+  const [alert, setAlert] = useState(null);
+  const [busy, setBusy] = useState(false);
+
+  const setField = (k, v) => {
+    setForm((s) => ({ ...s, [k]: v }));
+    if (errors[k]) setErrors((e) => ({ ...e, [k]: undefined }));
   };
-  const setR = (k, v) => {
-    setReassign((s) => ({ ...s, [k]: v }));
-    if (reErrs[k]) setReErrs((e) => ({ ...e, [k]: undefined }));
-  };
+  const invalid = (k) => (errors[k] ? "is-invalid" : "");
 
-  // ============== ASSIGN ==============
-  async function submitAssign(e) {
+  async function submit(e) {
     e.preventDefault();
-    setAssignAlert(null);
+    setAlert(null);
 
-    const errs = {};
-    if (!assign.traffic_police_id?.trim()) errs.traffic_police_id = "Traffic Police ID is required.";
-    if (!assign.higher_police_id?.trim()) errs.higher_police_id = "Higher Officer Police ID is required.";
-    if (Object.keys(errs).length) return setAssignErrs(errs);
+    const eMap = {};
+    if (!form.traffic_police_id?.trim()) eMap.traffic_police_id = "Traffic Police ID is required.";
+    if (!form.higher_police_id?.trim()) eMap.higher_police_id = "Higher Officer Police ID is required.";
+    if (Object.keys(eMap).length) return setErrors(eMap);
 
-    setAssigning(true);
+    setBusy(true);
     try {
-      const res = await api.post("/admin/assign-traffic-police-to-higher-police", assign);
+      const res = await api.post("/admin/assign-traffic-police-to-higher-police", form);
       const msg = res?.data?.message || res?.data?.messege || "Traffic officer assigned successfully.";
-      setAssignAlert({ type: "success", msg });
-      setAssignErrs({});
+      setAlert({ type: "success", text: msg });
+      setErrors({});
     } catch (err) {
-      // field errors
       const data = err?.response?.data || {};
       const f = {};
       if (data.errors && typeof data.errors === "object") {
         Object.entries(data.errors).forEach(([k, v]) => (f[k] = Array.isArray(v) ? v[0] : String(v)));
       }
-      setAssignErrs(f);
-      setAssignAlert({ type: "danger", msg: friendlyError(err, "Failed to assign traffic officer.") });
+      setErrors(f);
+      setAlert({ type: "danger", text: friendlyError(err, "Failed to assign traffic officer.") });
     } finally {
-      setAssigning(false);
+      setBusy(false);
     }
   }
 
-  // ============== REASSIGN ==============
-  async function checkCurrentHigher(e) {
+  return (
+    <>
+      <button className="btn btn px-0 mb-3" onClick={onBack}>← Back</button>
+      <Card>
+        <h4 className="mb-5">Assign Traffic → Higher</h4>
+        {alert && <div className={`alert alert-${alert.type}`}>{alert.text}</div>}
+
+        <form onSubmit={submit} noValidate>
+          <div className="mb-3">
+            <label className="form-label">Traffic Police ID</label>
+            <input
+              className={`form-control ${invalid("traffic_police_id")}`}
+              placeholder="e.g., 7777"
+              value={form.traffic_police_id}
+              onChange={(e) => setField("traffic_police_id", e.target.value)}
+              autoComplete="off"
+            />
+            {errors.traffic_police_id && <div className="invalid-feedback">{errors.traffic_police_id}</div>}
+          </div>
+          <div className="mb-2">
+            <label className="form-label">Higher Officer Police ID</label>
+            <input
+              className={`form-control ${invalid("higher_police_id")}`}
+              placeholder="e.g., 6666"
+              value={form.higher_police_id}
+              onChange={(e) => setField("higher_police_id", e.target.value)}
+              autoComplete="off"
+            />
+            {errors.higher_police_id && <div className="invalid-feedback">{errors.higher_police_id}</div>}
+          </div>
+
+          <div className="text-muted small mb-3">
+            * IDs are from <code>police_in_depts.police_id</code>.
+          </div>
+
+          <button className="btn btn-dark w-25" disabled={busy}>
+            {busy ? <><span className="spinner-border spinner-border-sm me-2" />Assigning…</> : "Assign"}
+          </button>
+        </form>
+      </Card>
+    </>
+  );
+}
+
+/* --------------------- Reassign form --------------------- */
+function ReassignForm({ onBack }) {
+  const [form, setForm] = useState({
+    traffic_officer_police_id: "",
+    current_higher: "",
+    new_higher_officer_police_id: "",
+  });
+  const [errors, setErrors] = useState({});
+  const [alert, setAlert] = useState(null);
+  const [checking, setChecking] = useState(false);
+  const [busy, setBusy] = useState(false);
+
+  const setField = (k, v) => {
+    setForm((s) => ({ ...s, [k]: v }));
+    if (errors[k]) setErrors((e) => ({ ...e, [k]: undefined }));
+  };
+  const invalid = (k) => (errors[k] ? "is-invalid" : "");
+
+  async function checkCurrent(e) {
     e?.preventDefault?.();
-    setReassignAlert(null);
-    setWatchAlert(null);
-    if (!reassign.traffic_officer_police_id?.trim()) {
-      return setReErrs({ traffic_officer_police_id: "Traffic Officer ID is required." });
+    setAlert(null);
+    if (!form.traffic_officer_police_id?.trim()) {
+      return setErrors({ traffic_officer_police_id: "Traffic Officer ID is required." });
     }
     setChecking(true);
     try {
       const res = await api.post("/admin/get-assigned-hOfficer", {
-        police_id: reassign.traffic_officer_police_id,
+        police_id: form.traffic_officer_police_id,
       });
       const higher = res?.data?.assigned_higher_officer || "";
-      setReassign((s) => ({ ...s, current_higher: higher }));
-      setReassignAlert({ type: "info", msg: higher ? `Current higher: ${higher}` : "This officer is not assigned." });
+      setForm((s) => ({ ...s, current_higher: higher }));
+      setAlert({ type: "info", text: higher ? `Current higher: ${higher}` : "This officer is not assigned." });
     } catch (err) {
-      setReassignAlert({ type: "danger", msg: friendlyError(err, "Could not fetch current higher officer.") });
+      setAlert({ type: "danger", text: friendlyError(err, "Could not fetch current higher officer.") });
     } finally {
       setChecking(false);
     }
   }
 
-  async function submitReassign(e) {
+  async function submit(e) {
     e.preventDefault();
-    setReassignAlert(null);
+    setAlert(null);
 
-    const errs = {};
-    if (!reassign.traffic_officer_police_id?.trim())
-      errs.traffic_officer_police_id = "Traffic Officer ID is required.";
-    if (!reassign.new_higher_officer_police_id?.trim())
-      errs.new_higher_officer_police_id = "New Higher Officer ID is required.";
-    if (Object.keys(errs).length) return setReErrs(errs);
+    const eMap = {};
+    if (!form.traffic_officer_police_id?.trim()) eMap.traffic_officer_police_id = "Traffic Officer ID is required.";
+    if (!form.new_higher_officer_police_id?.trim()) eMap.new_higher_officer_police_id = "New Higher Officer ID is required.";
+    if (Object.keys(eMap).length) return setErrors(eMap);
 
-    setReassigning(true);
+    // 1) Ensure we know the current higher now
+    let currentHigher = form.current_higher;
+    if (!currentHigher) {
+      try {
+        const res = await api.post("/admin/get-assigned-hOfficer", {
+          police_id: form.traffic_officer_police_id,
+        });
+        currentHigher = res?.data?.assigned_higher_officer || "";
+        setForm((s) => ({ ...s, current_higher: currentHigher }));
+      } catch (err) {
+        setAlert({ type: "danger", text: friendlyError(err, "Could not fetch current higher officer.") });
+        return;
+      }
+    }
+
+    // 2) If unassigned → ask user to use Assign instead
+    if (!currentHigher) {
+      setAlert({ type: "warning", text: "This officer is not currently assigned. Please use Assign instead." });
+      return;
+    }
+
+    // 3) If same as new higher → early info exit
+    if (String(currentHigher) === String(form.new_higher_officer_police_id)) {
+      setAlert({ type: "info", text: "Already assigned to this higher officer." });
+      return;
+    }
+
+    setBusy(true);
     try {
       const res = await api.post("/admin/reassign-traffic-officer", {
-        traffic_officer_police_id: reassign.traffic_officer_police_id,
-        new_higher_officer_police_id: reassign.new_higher_officer_police_id,
+        traffic_officer_police_id: form.traffic_officer_police_id,
+        new_higher_officer_police_id: form.new_higher_officer_police_id,
       });
       const msg = res?.data?.message || res?.data?.messege || "Traffic officer reassigned successfully.";
-      setReassignAlert({ type: "success", msg });
-      setReErrs({});
+      setAlert({ type: "success", text: msg });
+      setErrors({});
     } catch (err) {
       const data = err?.response?.data || {};
       const f = {};
       if (data.errors && typeof data.errors === "object") {
         Object.entries(data.errors).forEach(([k, v]) => (f[k] = Array.isArray(v) ? v[0] : String(v)));
       }
-      setReErrs(f);
-      setReassignAlert({ type: "danger", msg: friendlyError(err, "Failed to reassign traffic officer.") });
+      setErrors(f);
+      setAlert({ type: "danger", text: friendlyError(err, "Failed to reassign traffic officer.") });
     } finally {
-      setReassigning(false);
+      setBusy(false);
     }
   }
-
-  // ============== WATCH ==============
-  async function submitWatch(e) {
-    e.preventDefault();
-    setWatchAlert(null);
-    setWatchResult(null);
-
-    if (!watchId?.trim()) {
-      return setWatchAlert({ type: "warning", msg: "Enter a Traffic Officer ID to look up." });
-    }
-    setWatching(true);
-    try {
-      const res = await api.post("/admin/get-assigned-hOfficer", { police_id: watchId });
-      setWatchResult(res?.data || null);
-      if (!res?.data?.assigned_higher_officer) {
-        setWatchAlert({ type: "info", msg: "This officer is currently unassigned." });
-      }
-    } catch (err) {
-      setWatchAlert({ type: "danger", msg: friendlyError(err, "Lookup failed.") });
-    } finally {
-      setWatching(false);
-    }
-  }
-
-  const invalid = (map, key) => (map[key] ? "is-invalid" : "");
 
   return (
-    <div className="container py-4">
-      <h2 className="h3 m-2 text-center">Admin • Organize Officers</h2>
+    <>
+      <button className="btn btn px-0 mb-3" onClick={onBack}>← Back</button>
+      <Card>
+        <h4 className="mb-5">Reassign Traffic Officer</h4>
+        {alert && <div className={`alert alert-${alert.type}`}>{alert.text}</div>}
 
-      {/* Quick links to registration pages */}
-      <div className="d-flex gap-2 justify-content-center mb-3 mt-5 px-4">
-        <Link to="/AdminHigherPolice" className="btn btn-outline-primary btn-small">Register Higher Officer</Link>
-        <Link to="/AdminTrafficPolice" className="btn btn-outline-primary btn-small">Register Traffic Officer</Link>
-      </div>
-
-      <div className="row g-4 m-2">
-        {/* ASSIGN CARD */}
-        <div className="col-12 col-lg-6">
-          <div className="card shadow-sm border-0">
-            <div className="card-body">
-              <h4 className="card-title mb-4 mt-2">Assign Traffic → Higher</h4>
-
-              {assignAlert && (
-                <div className={`alert alert-${assignAlert.type}`} role="alert">
-                  {assignAlert.msg}
-                </div>
-              )}
-
-              <form onSubmit={submitAssign} noValidate>
-                <div className="mb-3">
-                  <label className="form-label" style={{fontSize:"1rem"}}>Traffic Police ID</label>
-                  <input
-                    className={`form-control ${invalid(assignErrs, "traffic_police_id")}`}
-                    value={assign.traffic_police_id}
-                    onChange={(e) => setA("traffic_police_id", e.target.value)}
-                    placeholder="e.g., 7777"
-                    autoComplete="off"
-                    required
-                  />
-                  {assignErrs.traffic_police_id && (
-                    <div className="invalid-feedback">{assignErrs.traffic_police_id}</div>
-                  )}
-                </div>
-
-                <div className="mb-5">
-                  <label className="form-label" style={{fontSize:"1rem"}}>Higher Officer Police ID</label>
-                  <input
-                    className={`form-control ${invalid(assignErrs, "higher_police_id")}`}
-                    value={assign.higher_police_id}
-                    onChange={(e) => setA("higher_police_id", e.target.value)}
-                    placeholder="e.g., 6666"
-                    autoComplete="off"
-                    required
-                  />
-                  {assignErrs.higher_police_id && (
-                    <div className="invalid-feedback">{assignErrs.higher_police_id}</div>
-                  )}
-                </div>
-
-                <div className="text-muted small mb-1">
-                * IDs are from <code>police_in_depts.police_id</code>.
-                </div>
-
-                <button className="btn btn-dark w-100" disabled={assigning}>
-                  {assigning ? (
-                    <>
-                      <span className="spinner-border spinner-border-sm me-2" />
-                      Assigning…
-                    </>
-                  ) : (
-                    "Assign"
-                  )}
-                </button>
-              </form>
-              
+        <form onSubmit={submit} noValidate>
+          <div className="mb-3">
+            <label className="form-label">Traffic Officer ID</label>
+            <div className="input-group">
+              <input
+                className={`form-control ${invalid("traffic_officer_police_id")}`}
+                placeholder="e.g., 7777"
+                value={form.traffic_officer_police_id}
+                onChange={(e) => setField("traffic_officer_police_id", e.target.value)}
+                autoComplete="off"
+              />
+              <button className="w-25 btn btn-outline-secondary" type="button" onClick={checkCurrent} disabled={checking}>
+                {checking ? "Checking…" : "Check current higher"}
+              </button>
             </div>
+            {errors.traffic_officer_police_id && (
+              <div className="invalid-feedback d-block">{errors.traffic_officer_police_id}</div>
+            )}
+            {form.current_higher && (
+              <div className="form-text">Current higher: <strong>{form.current_higher}</strong></div>
+            )}
           </div>
-        </div>
 
-        {/* REASSIGN CARD */}
-        <div className="col-12 col-lg-6">
-          <div className="card shadow-sm border-0">
-            <div className="card-body">
-              <h4 className="card-title mb-4">Reassign Traffic Officer</h4>
+          <div className="mb-3">
+            <label className="form-label">New Higher Officer ID</label>
+            <input
+              className={`form-control ${invalid("new_higher_officer_police_id")}`}
+              placeholder="e.g., 6666"
+              value={form.new_higher_officer_police_id}
+              onChange={(e) => setField("new_higher_officer_police_id", e.target.value)}
+              autoComplete="off"
+            />
+            {errors.new_higher_officer_police_id && (
+              <div className="invalid-feedback d-block">{errors.new_higher_officer_police_id}</div>
+            )}
+          </div>
 
-              {reassignAlert && (
-                <div className={`alert alert-${reassignAlert.type}`} role="alert">
-                  {reassignAlert.msg}
-                </div>
-              )}
+          <button className="btn btn-dark w-25" disabled={busy}>
+            {busy ? <><span className="spinner-border spinner-border-sm me-2" />Reassigning…</> : "Reassign"}
+          </button>
+        </form>
+      </Card>
+    </>
+  );
+}
 
-              <form onSubmit={submitReassign} noValidate>
-                <div className="mb-3">
-                  <label className="form-label" style={{fontSize:"1rem"}}>Traffic Officer ID</label>
-                  <div className="input-group">
-                    <input
-                      className={`form-control ${invalid(reErrs, "traffic_officer_police_id")}`}
-                      value={reassign.traffic_officer_police_id}
-                      onChange={(e) => setR("traffic_officer_police_id", e.target.value)}
-                      placeholder="e.g., 7777"
-                      autoComplete="off"
-                      required
-                    />
-                    <button
-                      className="btn btn-outline-secondary w-50 btn-sm"
-                      type="button"
-                      onClick={checkCurrentHigher}
-                      disabled={checking}
-                    >
-                      {checking ? "Checking…" : "Check current higher"}
-                    </button>
-                  </div>
-                  {reErrs.traffic_officer_police_id && (
-                    <div className="invalid-feedback d-block">{reErrs.traffic_officer_police_id}</div>
-                  )}
-                  {reassign.current_higher && (
-                    <div className="form-text">Current higher: <strong>{reassign.current_higher}</strong></div>
-                  )}
-                </div>
+/* --------------------- Lookup form --------------------- */
+function LookupForm({ onBack }) {
+  const [id, setId] = useState("");
+  const [alert, setAlert] = useState(null);
+  const [result, setResult] = useState(null);
+  const [busy, setBusy] = useState(false);
 
-                <div className="mb-5">
-                  <label className="form-label" style={{fontSize:"1rem"}}>New Higher Officer ID</label>
-                  <input
-                    className={`form-control ${invalid(reErrs, "new_higher_officer_police_id")}`}
-                    value={reassign.new_higher_officer_police_id}
-                    onChange={(e) => setR("new_higher_officer_police_id", e.target.value)}
-                    placeholder="e.g., 6666"
-                    autoComplete="off"
-                    required
-                  />
-                  {reErrs.new_higher_officer_police_id && (
-                    <div className="invalid-feedback d-block">
-                      {reErrs.new_higher_officer_police_id}
-                    </div>
-                  )}
-                </div>
+  async function submit(e) {
+    e.preventDefault();
+    setAlert(null);
+    setResult(null);
 
-                <button className="btn btn-dark w-100" disabled={reassigning}>
-                  {reassigning ? (
-                    <>
-                      <span className="spinner-border spinner-border-sm me-2" />
-                      Reassigning…
-                    </>
-                  ) : (
-                    "Reassign"
-                  )}
-                </button>
-              </form>
+    if (!id?.trim()) return setAlert({ type: "warning", text: "Enter a Traffic Officer ID to look up." });
+
+    setBusy(true);
+    try {
+      const res = await api.post("/admin/get-assigned-hOfficer", { police_id: id });
+      setResult(res?.data || null);
+      if (!res?.data?.assigned_higher_officer) setAlert({ type: "info", text: "This officer is currently unassigned." });
+    } catch (err) {
+      setAlert({ type: "danger", text: friendlyError(err, "Lookup failed.") });
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <>
+      <button className="btn btn px-0 mb-3" onClick={onBack}>← Back</button>
+      <Card>
+        <h4 className="mb-3">Watch / Lookup Assignment</h4>
+        {alert && <div className={`alert alert-${alert.type}`}>{alert.text}</div>}
+
+        <form className="row g-2 align-items-end" onSubmit={submit}>
+          <div className="col-12 col-md-4">
+            <label className="form-label">Traffic Officer ID</label>
+            <input className="form-control" placeholder="e.g., 7777" value={id} onChange={(e) => setId(e.target.value)} />
+          </div>
+          <div className="col-12 col-md-auto">
+            <button className="btn btn-outline-dark" disabled={busy}>
+              {busy ? <><span className="spinner-border spinner-border-sm me-2" />Checking…</> : "Lookup"}
+            </button>
+          </div>
+        </form>
+
+        {result && (
+          <div className="mt-3 row">
+            <div className="col-12 col-md-4">
+              <div className="border rounded p-2">
+                <div className="text-muted small">Traffic Officer</div>
+                <div className="fw-semibold">{result.traffic_officer}</div>
+              </div>
             </div>
-          </div>
-        </div>
-
-        {/* WATCH CARD */}
-        <div className="col-12">
-          <div className="card shadow-sm border-0">
-            <div className="card-body">
-              <h5 className="card-title mb-3">Watch / Lookup Assignment</h5>
-
-              {watchAlert && (
-                <div className={`alert alert-${watchAlert.type}`} role="alert">
-                  {watchAlert.msg}
-                </div>
-              )}
-
-              <form className="row g-2 align-items-end" onSubmit={submitWatch}>
-                <div className="col-12 col-md-4">
-                  <label className="form-label">Traffic Officer ID</label>
-                  <input
-                    className="form-control"
-                    value={watchId}
-                    onChange={(e) => setWatchId(e.target.value)}
-                    placeholder="e.g., 7777"
-                  />
-                </div>
-                <div className="col-12 col-md-auto">
-                  <button className="btn btn-outline-dark" disabled={watching}>
-                    {watching ? (
-                      <>
-                        <span className="spinner-border spinner-border-sm me-2" />
-                        Checking…
-                      </>
-                    ) : (
-                      "Lookup"
-                    )}
-                  </button>
-                </div>
-              </form>
-
-              {watchResult && (
-                <div className="mt-3">
-                  <div className="row">
-                    <div className="col-12 col-md-4">
-                      <div className="border rounded p-2">
-                        <div className="text-muted small">Traffic Officer</div>
-                        <div className="fw-semibold">{watchResult.traffic_officer}</div>
-                      </div>
-                    </div>
-                    <div className="col-12 col-md-4">
-                      <div className="border rounded p-2">
-                        <div className="text-muted small">Assigned Higher</div>
-                        <div className="fw-semibold">{watchResult.assigned_higher_officer || "—"}</div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              <div className="text-muted small mt-2">
-                * All IDs refer to <code>police_in_depts.police_id</code>.
+            <div className="col-12 col-md-4">
+              <div className="border rounded p-2">
+                <div className="text-muted small">Assigned Higher</div>
+                <div className="fw-semibold">{result.assigned_higher_officer || "—"}</div>
               </div>
             </div>
           </div>
+        )}
+
+        <div className="text-muted small mt-2">
+          * All IDs refer to <code>police_in_depts.police_id</code>.
         </div>
-      </div>
+      </Card>
+    </>
+  );
+}
+
+export default function AdminOrganize() {
+  const [mode, setMode] = useState("picker"); // 'picker' | 'assign' | 'reassign' | 'lookup'
+  useEffect(() => { document.title = "Admin • Organize Officers"; }, []);
+  return (
+    <div className="container py-4">
+      {mode === "picker" && <ActionPicker onPick={setMode} />}
+      {mode === "assign" && <AssignForm onBack={() => setMode("picker")} />}
+      {mode === "reassign" && <ReassignForm onBack={() => setMode("picker")} />}
+      {mode === "lookup" && <LookupForm onBack={() => setMode("picker")} />}
+      <div className="mt-4 p-3 rounded" style={{ backgroundColor: "#d3e2fd" }} />
     </div>
   );
 }
