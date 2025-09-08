@@ -148,7 +148,7 @@ function OfficerProfile() {
     return (
 
     <div>
-      <div className="row-cols-lg-auto d-lg-flex">
+      <div className="row-cols-lg-auto d-lg-flex mb-5">
           <div className="profile col-lg-4 bg-white rounded shadow me-lg-3" style={{height:"fit-content"}}>
               <div className="d-block w-100 my-4">
                   <div className="d-flex justify-content-center mb-4 position-relative" style={{width: "100%"}}>
