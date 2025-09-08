@@ -18,10 +18,19 @@ function OfficerRoutes() {
               <Route path="/OfficerNotifications" element={<PrivateRoute> <MainContent role={role} type="Notifications" /> </PrivateRoute>} /> */}
 
               <Route path="/OfficerOverview" element={ <MainContent username={username} role={role} type="Overview" />} />
-              <Route path="/OfficerSettings" element={ <MainContent role={role} type="Settings" /> } />
               <Route path="/OfficerDashboard" element={ <MainContent role={role} type="Dashboard" /> } />
               <Route path="/OfficerProfile" element={ <MainContent role={role} type="Profile" /> } />
               <Route path="/OfficerNotifications" element={ <MainContent role={role} type="Notifications" />} />
+
+              <Route path="/OfficerSettings" element={<MainContent role={role} type="Settings" />} />
+              <Route path="/OfficerSettings/account" element={<MainContent role={role} type="Settings" />} />
+              <Route path="/OfficerSettings/notifications" element={<MainContent role={role} type="Settings" />} />
+              <Route path="/OfficerSettings/help" element={<MainContent role={role} type="Settings" />} />
+              <Route path="/OfficerSettings/security/username" element={<MainContent role={role} type="Settings" />} />
+              <Route path="/OfficerSettings/security/password" element={<MainContent role={role} type="Settings" />} />
+              <Route path="/OfficerSettings/sessions" element={<MainContent role={role} type="Settings" />} />
+              <Route path="/OfficerSettings/danger" element={<MainContent role={role} type="Settings" />} />
+
       </Routes>
   );
 }
