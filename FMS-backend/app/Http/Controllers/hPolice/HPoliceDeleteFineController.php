@@ -96,6 +96,17 @@ class HPoliceDeleteFineController extends Controller
             $fineDeletingRequest->save();
 
             DB::commit();
+            $officer = $chargedFine->policeUser;    // issuing officer
+            $driver  = $chargedFine->driverUser;
+
+            $officer?->notify(new \App\Notifications\FineDeletionApprovedNotification());
+
+            $driver?->notify(new \App\Notifications\SystemEventNotification(
+                'A fine on your account was removed by a higher officer.',
+                'fine.deletion_approved',
+                ['fine_id' => (string)$chargedFine->id]
+            ));
+
 
             return response()->json([
                 'message' => 'Fine deletion approved and processed successfully.'
@@ -161,6 +172,18 @@ class HPoliceDeleteFineController extends Controller
             $chargedFine->save();
 
             DB::commit();
+
+            $officer = $chargedFine->policeUser;
+
+            $officer?->notify(new \App\Notifications\SystemEventNotification(
+                'Your fine deletion request was declined.',
+                'fine.deletion_declined',
+                [
+                'fine_id' => (string)$chargedFine->id,
+                'reason'  => $request->decline_reason ?? null
+                ]
+            ));
+
 
             return response()->json([
                 'message' => 'Fine deletion request has been declined successfully.'

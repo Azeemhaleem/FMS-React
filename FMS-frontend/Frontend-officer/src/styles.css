@@ -90,6 +90,7 @@
   
 
   .sidebar-links {
+    color: inherit;
     padding: 15px 12px;
     margin: 2px 0;
     display: flex;
@@ -100,7 +101,13 @@
     overflow: hidden;          /* Hides overflow text */
     text-overflow: ellipsis;   /* Adds ... if too long */
   }
-  
+  /* Active highlighting for the current page in the sidebar */
+
+  .sidebar-link--active {
+    background: #eaf2ff;
+    font-weight: 600;
+    border-left: 3px solid #0d6efd;
+  }
   .sidebar-links a {
     display: flex;
     align-items: center;
@@ -179,7 +186,7 @@
   }
 }
 
-  
+ 
   #Message {
     width: 40px;
     height: 25px;

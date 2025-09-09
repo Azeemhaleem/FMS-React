@@ -1,168 +1,178 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
-import api from '../api/axios.jsx';
-import default_image from '../assets/default_user.svg';
+import api from "../api/axios.jsx";
+import default_image from "../assets/default_user.svg";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {faSignOut, faHome} from "@fortawesome/free-solid-svg-icons";
+import { faSignOut, faHome } from "@fortawesome/free-solid-svg-icons";
 
+function toAbsolute(path) {
+  if (!path) return null;
+  if (/^https?:\/\//i.test(path)) return path;
+  let origin;
+  try {
+    origin = new URL(api?.defaults?.baseURL || window.location.origin).origin;
+  } catch {
+    origin = window.location.origin;
+  }
+  if (!path.startsWith("/")) path = `/${path}`;
+  return `${origin}${path}`;
+}
+
+function getToken() {
+  try {
+    const raw = localStorage.getItem("token");
+    if (raw && !raw.startsWith("{") && !raw.startsWith("[")) return raw;
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
 
 function Header({ username, role }) {
+  // 1) Start with whatever we last cached (instant render, no flash)
+  const [profileImage, setProfileImage] = useState(
+    () => localStorage.getItem("police_profile_img") || default_image
+  );
 
-  const [profileImage, setProfileImage] = useState(default_image);
-
-  const getToken = () => {
-    try {
-      const tokenString = localStorage.getItem('token');
-      if (tokenString && !tokenString.startsWith('{') && !tokenString.startsWith('[')) {
-        return tokenString;
-      }
-      return tokenString ? JSON.parse(tokenString) : null;
-    } catch (error) {
-      console.error('Error parsing token:', error);
-      return null;
-    }
-  };
   const token = getToken();
-  const getUser = () => {
-    try {
-      const userString = localStorage.getItem('user');
-      if (userString && !userString.startsWith('{') && !userString.startsWith('[')) {
-        return { username: userString };
-      }
-      return userString ? JSON.parse(userString) : null;
-    } catch (error) {
-      console.error('Error parsing user:', error);
-      return null;
-    }
-  };
 
-  const user = getUser();
-
+  // One fetch on mount to be sure we have the latest (with cache-buster)
   useEffect(() => {
-
     if (!token) {
       setProfileImage(default_image);
-      return; // ⛔ Don't proceed if token is missing
-    }
-
-    if (!user) {
-      console.warn('Unauthorized access attempt');
       return;
     }
-    const role = localStorage.getItem('role');
-    async function getProfilePic() {
+
+    const roleKey = (localStorage.getItem("role") || role || "").toLowerCase();
+    const endpoint =
+      roleKey === "driver" ? "/driver/get-profile-image" : "/police/get-profile-image";
+
+    const fetchPic = async () => {
       try {
-        const endpoint =
-            role === 'driver'
-                ? '/driver/get-profile-image'
-                : '/police/get-profile-image';
-        const response = await api.get(endpoint, {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
+        const r = await api.get(endpoint, {
+          headers: { Authorization: `Bearer ${token}` },
         });
-
-        if (response.status === 200) {
-          const imagePath = response.data.path;
-          const fullImageUrl = `http://127.0.0.1:8000${imagePath}?t=${new Date().getTime()}`;
-          setProfileImage(fullImageUrl);
+        const full = toAbsolute(r?.data?.path);
+        if (full) {
+          const bust = `${full}${full.includes("?") ? "&" : "?"}t=${Date.now()}`;
+          setProfileImage(bust);
+          try {
+            localStorage.setItem("police_profile_img", bust);
+          } catch {}
         }
-      } catch (error) {
-        console.error('Profile Image Failed to load:', error.response?.data || error.message);
+      } catch (err) {
+        // fall back silently; default image already shown
+        // console.error("Header image load failed:", err?.response?.data || err?.message);
       }
-    }
-
-    getProfilePic();
-
-    const handleProfileImageUpdate = () => {
-      getProfilePic(); // refetch the image
     };
 
-    window.addEventListener('profile-image-updated', handleProfileImageUpdate);
+    fetchPic();
 
-    return () => {
-      window.removeEventListener('profile-image-updated', handleProfileImageUpdate);
+    // 2) Listen for the custom event fired by the profile page after upload
+    const onUpdated = (e) => {
+      const next = e?.detail?.url;
+      if (next) {
+        setProfileImage(next);               // instant swap, no refetch
+        try { localStorage.setItem("police_profile_img", next); } catch {}
+      }
     };
-  }, []);
+    window.addEventListener("profile-image-updated", onUpdated);
 
+    return () => window.removeEventListener("profile-image-updated", onUpdated);
+  }, [token, role]);
 
   return (
-      <header className="header">
+    <header className="header">
+      <div className="header-right">
+        <nav className="nav-bar">
+          <Link
+            to={
+              role === "Admin" ? "/AdminOverview"
+              : role === "SuperAdmin" ? "/SuperAdminOverview"
+              : role === "HigherOfficer" ? "/HigherOfficerProfile"
+              : role === "Officer" ? "/OfficerOverview"
+              : role === "Driver" ? "/DriverOverview"
+              : "/"
+            }
+            style={{ textDecoration: "none", color: "black" }}
+          >
+            <h2 className="m-4 d-none d-md-block">
+              <b>{role} Portal</b>
+            </h2>
+          </Link>
 
-        <div>
-          <div className="header-right" >
-            <nav className="nav-bar">
-              <Link to={
-                role === 'Admin' ? '/AdminOverview'
-                    : role === 'SuperAdmin' ? '/SuperAdminOverview'
-                        : role === 'HigherOfficer' ? '/HigherOfficerProfile'
-                            : role === 'Officer' ? '/OfficerOverview'
-                                : role === 'Driver' ? '/DriverOverview'
-                                    : null
-              } style={{ textDecoration: "none", color: "black" }}>
-                <h2 className="m-4 d-none d-md-block ">
-                  <b>{role} Portal</b>
-                </h2>
+          <div className="navbarlinks mt-2" style={{ marginLeft: "5%" }}>
+            <p className="navbarlink fs-5 mt-2">
+              <Link to="/home" id="navlinks">
+                              <b>Home</b>
               </Link>
+            </p>
 
-              <div className="navbarlinks mt-2" style={{marginLeft:"5%"}}>
-                <p className="navbarlink fs-5 mt-2">
-                  <a href="/home" id="navlinks">
-                    <FontAwesomeIcon icon={faHome} className="pe-1"/>
-                    <b>Home</b>
-                  </a>
-                </p>
+            <p className="navbarlink fs-5 mt-2">
+              <a
+                href="#"
+                id="navlinks"
+                title="Logout"
+                style={{ cursor: "pointer" }}
+                onClick={(e) => {
+                  e.preventDefault();
+                  localStorage.removeItem("token");
+                  localStorage.removeItem("user");
+                  window.location.href = "/loginPolice";
+                }}
+              >
+                
+                <b>Logout</b>
+              </a>
+            </p>
 
-                <p className="navbarlink fs-5 mt-2">
-                  <a
-                      href="#"
-                      id="navlinks"
-                      title="Logout"
-                      style={{ cursor: "pointer" }}
-                      onClick={(e) => {
-                        e.preventDefault(); // Prevent default link behavior
-                        localStorage.removeItem('token');
-                        localStorage.removeItem('user');
-                        window.location.href = "/loginPolice"; // Redirect to home
-                      }}
-                  >
-                    <FontAwesomeIcon icon={faSignOut} className="pe-1"/>
-                    <b>Logout</b>
-                  </a>
-                </p>
+            <p className="navbarlink text-secondary d-flex pe-1 me-1">
+              <span className="name d-block pe-2 mt-1">
+                Hey, <b style={{ color: "black" }}>{username}</b>
+                <br />
+                {role}
+              </span>
 
-
-                <p className="navbarlink text-secondary d-flex pe-1 me-1">
-                  <p className="name d-block pe-2 mt-1">
-                    Hey,<b style={{ color: "black" }}>{username}</b>
-                    <br />
-                    {role}
-                  </p>
-                  <Link to={
-                    role === 'Admin' ? '/AdminProfile'
-                        : role === 'SuperAdmin' ? '/SuperAdminProfile'
-                            : role === 'HigherOfficer' ? '/HigherOfficerProfile'
-                                : role === 'Officer' ? '/OfficerProfile'
-                                    : role === 'Driver' ? '/DriverProfile'
-                                        : null
-                  } className="profile-img-link" >
-                    <img
-                        src={profileImage}
-                        onError={(e) => { e.target.src = default_image; }}
-                        alt=""
-                        width="50px"
-                        height="50px"
-                        className="rounded-circle d-inline-flex"
-                    />
-                  </Link>
-                </p>
-
-              </div>
-            </nav>
+              <Link
+                to={
+                  role === "Admin" ? "/AdminProfile"
+                  : role === "SuperAdmin" ? "/SuperAdminProfile"
+                  : role === "HigherOfficer" ? "/HigherOfficerProfile"
+                  : role === "Officer" ? "/OfficerProfile"
+                  : role === "Driver" ? "/DriverProfile"
+                  : "/"
+                }
+                className="profile-img-link"
+              >
+                <div
+                  style={{
+                    width: 50,
+                    height: 50,
+                    borderRadius: "50%",
+                    overflow: "hidden",
+                    display: "inline-block",
+                    flexShrink: 0,
+                  }}
+                >
+                <img
+                  src={profileImage}
+                  onError={(e) => { e.currentTarget.src = default_image; }}
+                  alt="profile"
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    objectFit: "cover",
+                    display: "block",
+                  }}
+                />
+                </div>
+              </Link>
+            </p>
           </div>
-        </div>
-      </header>
+        </nav>
+      </div>
+    </header>
   );
 }
 

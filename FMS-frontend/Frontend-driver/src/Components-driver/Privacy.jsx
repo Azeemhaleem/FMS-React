@@ -2,7 +2,7 @@ import React from "react";
 
 const Privacy = () => {
   return (
-    <div className="container mt-5 p-4 bg-light rounded shadow-sm">
+    <div className="container mt-2 p-4 bg-light rounded shadow-sm mb-5">
       <h2 className="mb-4">Privacy Policy</h2>
       <p>
         Your privacy is important to us. This Privacy Policy explains how we collect, use, and protect your personal information through the Fine Management System (FMS).
