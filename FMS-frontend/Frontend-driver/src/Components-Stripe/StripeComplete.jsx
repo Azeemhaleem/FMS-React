@@ -4,7 +4,6 @@ import { loadStripe } from "@stripe/stripe-js";
 import { CheckCircle, XCircle, Clock, ArrowLeft } from "lucide-react";
 import api from "../api/axios.jsx";
 
-// Initialize Stripe with error handling
 const initializeStripe = () => {
     try {
         const stripePublishableKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || import.meta.env.STRIPE_PUBLISHABLE_KEY;
@@ -59,7 +58,6 @@ export default function StripeComplete() {
 
                 let paymentIntent;
 
-                // Try to retrieve payment intent using client secret first
                 if (clientSecret) {
                     const { paymentIntent: retrievedIntent, error } = await stripe.retrievePaymentIntent(clientSecret);
 
@@ -72,7 +70,7 @@ export default function StripeComplete() {
 
                     paymentIntent = retrievedIntent;
                 }
-                // If no client secret but we have payment intent ID, use backend API
+
                 else if (paymentIntentId) {
                     try {
                         const token = localStorage.getItem("token");
@@ -105,13 +103,11 @@ export default function StripeComplete() {
                     case "succeeded":
                         setStatus("success");
                         setMessage("Payment completed successfully!");
-                        // Update payment status in backend
                         await updatePaymentStatus(paymentIntent.id, "succeeded");
                         break;
                     case "processing":
                         setStatus("processing");
                         setMessage("Your payment is being processed...");
-                        // Poll for status updates (every 3 seconds)
                         setTimeout(() => verifyPayment(), 3000);
                         return; // Don't set loading to false yet
                     case "requires_payment_method":
@@ -214,9 +210,9 @@ export default function StripeComplete() {
 
     const handleButtonClick = () => {
         if (status === "error") {
-            navigate(-1); // Go back to payment form
+            navigate(-1);
         } else {
-            navigate("/driver-payment"); // Changed from /DriverPayment to match your route
+            navigate("/driver-payment");
         }
     };
 
@@ -232,7 +228,7 @@ export default function StripeComplete() {
                                     {getStatusIcon()}
                                 </div>
 
-                                {/* Status Message */}
+
                                 <div className="text-center mb-4">
                                     <h2 className="fw-bold mb-3">
                                         {status === "success" && "Payment Successful!"}
@@ -243,7 +239,7 @@ export default function StripeComplete() {
                                     <p className="text-muted lead">{message}</p>
                                 </div>
 
-                                {/* Payment Intent ID */}
+
                                 {paymentIntentId && (
                                     <div className="bg-light rounded p-3 mb-4">
                                         <small className="text-muted d-block mb-1">Transaction ID</small>
@@ -251,7 +247,7 @@ export default function StripeComplete() {
                                     </div>
                                 )}
 
-                                {/* Success Details */}
+
                                 {status === "success" && (
                                     <div className="alert alert-success d-flex align-items-start mb-4" role="alert">
                                         <CheckCircle size={20} className="me-2 mt-1 flex-shrink-0" />
@@ -264,7 +260,7 @@ export default function StripeComplete() {
                                     </div>
                                 )}
 
-                                {/* Processing Notice */}
+
                                 {status === "processing" && (
                                     <div className="alert alert-warning d-flex align-items-start mb-4" role="alert">
                                         <Clock size={20} className="me-2 mt-1 flex-shrink-0" />
@@ -277,7 +273,7 @@ export default function StripeComplete() {
                                     </div>
                                 )}
 
-                                {/* Error Details */}
+
                                 {status === "error" && (
                                     <div className="alert alert-danger d-flex align-items-start mb-4" role="alert">
                                         <XCircle size={20} className="me-2 mt-1 flex-shrink-0" />
@@ -290,7 +286,7 @@ export default function StripeComplete() {
                                     </div>
                                 )}
 
-                                {/* Action Buttons */}
+
                                 <div className="d-grid gap-2">
                                     <button
                                         onClick={handleButtonClick}
@@ -324,7 +320,6 @@ export default function StripeComplete() {
                             </div>
                         </div>
 
-                        {/* Help Text */}
                         <div className="text-center mt-4">
                             <small className="text-muted">
                                 Need help? Contact support if you have any questions about your payment.

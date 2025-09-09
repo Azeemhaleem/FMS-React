@@ -11,7 +11,7 @@ import {
 } from "@stripe/react-stripe-js";
 import { CreditCard, ArrowLeft, CheckCircle, AlertCircle } from "lucide-react";
 
-// Initialize Stripe with error handling
+
 let stripePromise;
 try {
     const stripePublishableKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
@@ -28,7 +28,7 @@ export default function StripePay() {
     const navigate = useNavigate();
     const token = localStorage.getItem("token");
 
-    // Extract fine IDs from navigation state or URL params
+
     const fineIds = useMemo(() => {
         let ids = location.state?.fineIds;
         if (!ids) {
@@ -49,7 +49,7 @@ export default function StripePay() {
     const [retryCount, setRetryCount] = useState(0);
 
     useEffect(() => {
-        // Check if token exists and is valid
+
         if (!token) {
             setError("Authentication required. Please log in.");
             setLoading(false);
@@ -78,7 +78,6 @@ export default function StripePay() {
                     }
                 );
 
-                // Handle different response structures
                 const responseData = response.data || response;
 
                 if (responseData.error) {
@@ -93,18 +92,16 @@ export default function StripePay() {
                 setAmount(responseData.amount);
                 setCurrency(responseData.currency || "usd");
             } catch (err) {
-                // Handle different error formats
+
                 let errorMessage = err.response?.data?.message ||
                     err.message ||
                     "Failed to initialize payment";
 
-                // Check for the specific Stripe parameter conflict error
                 if (errorMessage.includes('automatic_payment_methods') &&
                     errorMessage.includes('confirmation_method')) {
                     errorMessage = "Payment system configuration error. Please contact support or try again later.";
                 }
 
-                // Also check for 400 Bad Request which often contains this error
                 if (err.response?.status === 400 && err.response?.data?.error) {
                     const stripeError = err.response.data.error;
                     if (stripeError.includes('automatic_payment_methods') &&
@@ -115,12 +112,10 @@ export default function StripePay() {
 
                 setError(errorMessage);
 
-                // If token is invalid, redirect to login
                 if (err.response?.status === 401) {
                     localStorage.removeItem("token");
                 }
 
-                // If it's the Stripe conflict error and we haven't retried too many times
                 if (errorMessage.includes('automatic_payment_methods') &&
                     errorMessage.includes('confirmation_method') &&
                     retryCount < 2) {
@@ -225,7 +220,7 @@ export default function StripePay() {
                 <div className="row justify-content-center">
                     <div className="col-md-10 col-lg-8 col-xl-6">
                         <div className="card shadow-lg border-0">
-                            {/* Header */}
+
                             <div className="card-header bg-primary text-white p-4 rounded-top d-flex flex-column">
                                 <div className="d-flex align-items-center justify-content-center mb-3 mx-auto w-50">
                                     <CreditCard size={28} className="w-25 ms-1"/>
@@ -241,7 +236,7 @@ export default function StripePay() {
                                 )}
                             </div>
 
-                            {/* Payment Form */}
+
                             <div className="card-body p-4">
                                 <Elements stripe={stripePromise} options={stripeOptions}>
                                     <CheckoutForm
@@ -254,7 +249,6 @@ export default function StripePay() {
                             </div>
                         </div>
 
-                        {/* Back Button */}
                         <div className="text-center mt-4">
                             <button
                                 onClick={handleBackToPayments}

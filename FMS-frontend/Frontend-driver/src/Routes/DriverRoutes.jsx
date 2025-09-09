@@ -2,6 +2,8 @@ import React, {useEffect, useState} from "react";
 import { Route, Routes } from "react-router-dom";
 import MainContent from "../pages/MainContent";
 import PrivateRoute from "./PrivateRoute";
+import StripePay from "../Components-Stripe/StripePay.jsx";
+import StripeComplete from "../Components-Stripe/StripeComplete.jsx";
 
 function DriverRoutes() {
   
@@ -12,7 +14,6 @@ function DriverRoutes() {
     
     
     <Routes>
-      
       <Route path="/DriverOverview" element={<MainContent role={role} type="Dashboard" />} />
       <Route path="/DriverSettings" element={<MainContent role={role} type="Settings" />} />
       <Route path="/DriverReport" element={<MainContent role={role} type="Report" />} />
@@ -24,7 +25,8 @@ function DriverRoutes() {
       <Route path="/Account" element={<MainContent role={role} type="Account" />} />
       <Route path="/Privacy" element={<MainContent role={role} type="Privacy" />} />
       <Route path="/About" element={<MainContent role={role} type="About" />} />
-
+      <Route path="/pay-fines" element={<StripePay />} />
+      <Route path="/payment/complete" element={<StripeComplete />} />
     </Routes>
   );
 }
