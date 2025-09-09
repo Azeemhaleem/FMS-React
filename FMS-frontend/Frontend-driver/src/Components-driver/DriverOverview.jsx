@@ -137,31 +137,6 @@ export default function DriverOverview() {
         navigate("/pay-fines", { state: { fineIds: allUnpaidIds } });
     };
 
-      setRecentPayments(
-        paidRaw
-          .map((x) => ({
-            id: x.fine?.id,
-            name: x.fine?.name,
-            amount: x.fine?.amount,
-            description: x.fine?.description,
-            issued_at: x.issued_at,
-            paid_at: x.paid_at,
-            expires_at: x.expires_at,
-            police_user_id: x.police_user_id,
-          }))
-          .sort(
-            (a, b) =>
-              new Date(b.paid_at || b.issued_at) -
-              new Date(a.paid_at || a.issued_at)
-          )
-      );
-    } catch {
-      setPageError("Payment failed. No charge was made. Please try again.");
-    } finally {
-      setPayingId(null);
-    }
-  };
-
     // ---------- MEMO ----------
     const threeUnpaid = useMemo(() => unpaid.slice(0, 3), [unpaid]);
     const threePayments = useMemo(
