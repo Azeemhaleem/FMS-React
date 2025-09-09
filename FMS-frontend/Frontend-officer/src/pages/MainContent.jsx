@@ -143,7 +143,7 @@ function MainContent({ username, image, role, type }) {
                   {type === "Dashboard" && <OfficerDashboard />}
                   {type === "Notifications" && <PoliceNotifications />}
                   {type === "Settings" && <OfficerSettings section={settingsSection} />}
-                  {type === "Profile" && <OfficerProfile />}
+                  {type === "Profile" && <PoliceProfile />}
                 </>
               )}
 
