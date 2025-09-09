@@ -142,23 +142,29 @@ const payRow = async (rowKey) => {
   await payMany([row.payId], [rowKey]);
 };
 
-const payMany = async (idsToPay, rowKeysInvolved) => {
-  setPageError("");
-  setPayingRows(prev => new Set([...prev, ...rowKeysInvolved]));
-  try {
-    await api.post(
-      "/process-payment",
-      { fineIds: idsToPay },
-      { headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" } }
-    );
-    setSelected(new Set());
-    await Promise.all([loadUnpaid(), loadPaid()]);
-  } catch {
-    setPageError("Payment failed. No charge was made. Please try again.");
-  } finally {
-    setPayingRows(new Set());
-  }
-};
+// const payMany = async (idsToPay, rowKeysInvolved) => {
+//   setPageError("");
+//   setPayingRows(prev => new Set([...prev, ...rowKeysInvolved]));
+//   try {
+//     await api.post(
+//       "/process-payment",
+//       { fineIds: idsToPay },
+//       { headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" } }
+//     );
+//     setSelected(new Set());
+//     await Promise.all([loadUnpaid(), loadPaid()]);
+//   } catch {
+//     setPageError("Payment failed. No charge was made. Please try again.");
+//   } finally {
+//     setPayingRows(new Set());
+//   }
+// };
+
+  // inside DriverPayment.jsx
+  const payMany = async (idsToPay, rowKeysInvolved) => {
+    navigate("/pay-fines", { state: { fineIds: idsToPay } });
+  };
+
 
 
   // ---------- Render ----------
