@@ -58,7 +58,7 @@ function Slidebar({ role = "Driver" }) {
       { icon: faTableColumns, text: "Overview", link: "/DriverOverview" },
       { icon: faTableColumns, text: "My Fines", link: "/DriverMyFines" },
       { icon: faCreditCard, text: "Payment", link: "/DriverPayment" },
-      { icon: faCommentDots, text: "Messages", link: "/DriverMessages" },
+      { icon: faCommentDots, text: "Notifications", link: "/DriverMessages" },
       { icon: faFile, text: "Appeal", link: "/DriverAppeal" },
       { icon: faGear, text: "Settings", link: "/DriverSettings" },
       { icon: faUser, text: "My Profile", link: "/DriverProfile" },
@@ -90,7 +90,7 @@ function Slidebar({ role = "Driver" }) {
                 </span>
 
                 {/* Tiny blue dot when there are unread notifications */}
-                {item.text === "Messages" && unreadCount > 0 && (
+                {item.text === "Notifications" && unreadCount > 0 && (
                   <span
                     title={`${unreadCount} unread`}
                     aria-label={`${unreadCount} unread`}
