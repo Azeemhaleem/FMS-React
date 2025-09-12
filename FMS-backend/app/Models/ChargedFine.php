@@ -58,4 +58,13 @@ class ChargedFine extends Model
     {
         return $this->hasOne(FineAppealRequest::class, 'fine_id');
     }
+
+    /**
+     * Relationship to payment (if this charged fine is part of a payment)
+     * This will find payments where this charged fine ID is in the charged_fine_ids array
+     */
+    public function payments()
+    {
+        return Payment::whereJsonContains('charged_fine_ids', $this->id);
+    }
 }

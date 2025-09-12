@@ -10,6 +10,8 @@ use App\Http\Controllers\driver\FineManageController;
 use App\Http\Controllers\driver\PaymentController;
 use App\Http\Controllers\driver\FinePayingController;
 use App\Http\Controllers\driver\FineAppealController;
+use App\Http\Controllers\StripeWebhookController;
+use App\Http\Controllers\StripeController;
 
 
 Route::middleware(['auth:sanctum', EnsureDriver::class, EnsureEmailVerified::class])->group(function () {
@@ -36,4 +38,11 @@ Route::middleware(['auth:sanctum', EnsureDriver::class, EnsureEmailVerified::cla
         )->name('appeal-fine');
      Route::get('/driver/appeals', [FineAppealController::class, 'myAppeals'])
         ->name('driver.my-appeals');
+
+    Route::get('/intent/{paymentIntentId}', [FinePayingController::class, 'getPaymentIntent']);
+    Route::post('/status', [FinePayingController::class, 'updatePaymentStatus']);
+    Route::get('/details/{paymentIntentId}', [FinePayingController::class, 'getPaymentDetails']);
 });
+
+// Stripe webhook (no auth; protect with signature verification in controller)
+Route::post('/stripe/webhook', [StripeWebhookController::class, 'handle']);
