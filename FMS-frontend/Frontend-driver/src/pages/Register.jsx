@@ -10,6 +10,7 @@ import {Link} from "react-router-dom";
 import SlideToContinue from "../components/SlideToContinue.jsx";
 import api from "../api/axios";
 import Login_sm_image from "../assets/login-sm-image.png";
+import { useNavigate } from "react-router-dom";
 
 function Register() {
     const [scanResult, setScanResult] = useState(null);
@@ -21,6 +22,7 @@ function Register() {
     const [qrScan, setQrScan] = useState(false);
     const [passwordVisibility, setPasswordVisibility] = useState(false);
     const [confirmPasswordVisibility, setConfirmPasswordVisibility] = useState(false);
+    const navigate = useNavigate();
 
     useEffect(() => {
         if (scanResult) {
@@ -134,7 +136,7 @@ function Register() {
                 setVerified(true);
                 alert("Account Verified Successfully!");
                 closeModal();
-                window.location.reload();
+                navigate('/login');
             } else {
                 setVerified(false);
                 alert("Invalid OTP!");
@@ -228,9 +230,10 @@ function Register() {
                                             {/*    </Form.Group>*/}
                                             {/*</div>*/}
                                         <Form.Group>
-                                            <div className="d-flex justify-content-center align-items-center qrscan"
+
+                                            <div className="d-flex justify-content-center align-items-center qrscan mx-auto"
                                                  style={{ height: "45vh", width: "100%" }}>
-                                                <QrCodeScanner setScanResult={setScanResult} />
+                                                    <QrCodeScanner setScanResult={setScanResult} />
                                                 {formik.touched.DriverQr && formik.errors.DriverQr && (
                                                     <Form.Control.Feedback type="invalid">
                                                         {formik.errors.DriverQr}

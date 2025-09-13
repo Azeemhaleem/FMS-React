@@ -1,3 +1,27 @@
+.sliding-btn {
+    background: linear-gradient(
+            270deg,
+            #1e3a8a,
+            #3b82f6,
+            #1e3a8a
+    ); /* blue gradient */
+    background-size: 600% 600%;
+    animation: slideBg 4s linear infinite;
+    color: #fff !important;
+    border: none;
+    font-weight: bold;
+    transition: transform 0.2s ease;
+}
+
+.sliding-btn:hover {
+    transform: scale(1.05);
+}
+
+@keyframes slideBg {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
 #render {
     max-width: 100%;
     max-height: 40vh !important;

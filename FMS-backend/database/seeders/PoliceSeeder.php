@@ -27,42 +27,52 @@ class PoliceSeeder extends Seeder
         DB::table('police_in_depts')->insert([
             'police_id' => '1111',
             'full_name' => 'Police 1',
+            'p_station' => 'Colombo',
         ]);
         DB::table('police_in_depts')->insert([
             'police_id' => '2222',
             'full_name' => 'Police 2',
+            'p_station' => 'Kandy',
         ]);
         DB::table('police_in_depts')->insert([
             'police_id' => '3333',
             'full_name' => 'Police 3',
+            'p_station' => 'Colombo',
         ]);
         DB::table('police_in_depts')->insert([
             'police_id' => '4444',
             'full_name' => 'Police 4',
+            'p_station' => 'Kandy',
         ]);
         DB::table('police_in_depts')->insert([
             'police_id' => '5555',
             'full_name' => 'Police 5',
+            'p_station' => 'Colombo',
         ]);
         DB::table('police_in_depts')->insert([
             'police_id' => '6666',
             'full_name' => 'Police 6',
+            'p_station' => 'Colombo',
         ]);
         DB::table('police_in_depts')->insert([
             'police_id' => '7777',
             'full_name' => 'Police 7',
+            'p_station' => 'Colombo',
         ]);
         DB::table('police_in_depts')->insert([
             'police_id' => '8888',
             'full_name' => 'Police 8',
+            'p_station' => 'Colombo',
         ]);
         DB::table('police_in_depts')->insert([
             'police_id' => '9999',
             'full_name' => 'Police 9',
+            'p_station' => 'Colombo',
         ]);
         DB::table('police_in_depts')->insert([
             'police_id' => '1010',
             'full_name' => 'Police 10',
+            'p_station' => 'Colombo',
         ]);
 
         DB::table('police_users')->insert([

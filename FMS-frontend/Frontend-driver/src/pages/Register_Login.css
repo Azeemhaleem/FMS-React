@@ -13,24 +13,35 @@ body {
     background-color: #b8dff8 !important;
 }
 
-nav ul li {
-    list-style: none;
+.sliding-btn {
+    background: linear-gradient(
+            270deg,
+            #1e3a8a,
+            #3b82f6,
+            #1e3a8a
+    ); /* blue gradient */
+    background-size: 600% 600%;
+    animation: slideBg 4s linear infinite;
+    color: #fff !important;
+    border: none;
+    font-weight: bold;
+    transition: transform 0.2s ease;
 }
 
-nav ul li a {
-    text-decoration: none;
-    color: #06afef;
+.sliding-btn:hover {
+    transform: scale(1.05);
 }
 
-nav ul li a:hover {
-    cursor: pointer;
-    color: #24243E;
+@keyframes slideBg {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
 }
-
 #render {
     max-width: fit-content;
     max-height: fit-content;
     padding: 10px !important;
+    margin:0 auto 0 auto;
 }
 
 #render button {
@@ -46,6 +57,71 @@ nav ul li a:hover {
 #render img {
     width: 35%;
 }
+/*#render {*/
+/*    max-width: 100%;*/
+/*    max-height: 40vh !important;*/
+/*}*/
+
+/*#render button {*/
+/*    background-color: #555b63;*/
+/*    font-size: medium !important;*/
+/*    color: white;*/
+/*    padding: 5px 10px;*/
+/*    border-radius: 3px;*/
+/*    border: none;*/
+/*}*/
+
+#render__scan_region video{
+    width: 70% !important;
+    margin:0 auto 0 auto;
+}
+
+/*#render img {*/
+/*    width: 32% !important;*/
+/*}*/
+
+/*#render__scan_region img{*/
+/*    width: 28% !important;*/
+/*}*/
+
+/*#render__dashboard_section{*/
+/*    padding:0 !important;*/
+/*}*/
+/*!*button*!*/
+
+/*#render__dashboard_section div div{*/
+/*    padding: 0 !important;*/
+/*    width: 90% !important;*/
+/*    margin:auto auto 2px !important;*/
+/*}*/
+
+/*#render__dashboard_section{*/
+/*    margin-top: 10px !important;*/
+/*}*/
+
+/*#render__dashboard_section div div label{*/
+/*    padding-top: 5px !important;*/
+/*}*/
+
+/*#html5-qrcode-anchor-scan-type-change{*/
+/*    margin-top: 10px !important;*/
+/*}*/
+
+nav ul li {
+    list-style: none;
+}
+
+nav ul li a {
+    text-decoration: none;
+    color: #06afef;
+}
+
+nav ul li a:hover {
+    cursor: pointer;
+    color: #24243E;
+}
+
+
 form{
     /*margin-top: 10%;*/
     display: flex;

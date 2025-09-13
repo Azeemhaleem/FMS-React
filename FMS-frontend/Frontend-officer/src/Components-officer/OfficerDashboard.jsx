@@ -223,10 +223,10 @@ function OfficerDashboard() {
                 const { fine_id, driver_license_number } = response.data;
                 console.log("Fine ID:", fine_id);
                 console.log("Driver License Number:", driver_license_number);
-
                 alert("Fine issued Successfully!");
                 setSubmittedData(null);
                 resetAll();
+                window.location.reload();
             } else {
                 console.error("Unexpected response status:", response.status);
                 alert("Unexpected error occurred while issuing the fine.");
