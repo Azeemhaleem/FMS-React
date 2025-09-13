@@ -1,6 +1,7 @@
 import React from "react";
 import { Route, Routes } from "react-router-dom";
 import MainContent from "../pages/MainContent";
+import PayFinesPage from "../pages/PayFines.jsx";
 
 import PrivateRoute from "./PrivateRoute";
 import StripePay from "../Components-Stripe/StripePay.jsx";
@@ -17,6 +18,7 @@ function DriverRoutes() {
       <Route path="/DriverMyFines" element={<MainContent role={role} type="My Fines" />} />
       <Route path="/DriverProfile" element={<MainContent role={role} type="My Profile" />} />
       <Route path="/DriverAppeal" element={<MainContent role={role} type="Appeal" />} />
+      {/* <Route path="/pay-fines" element={<PayFinesPage />} /> */}
 
       {/* Settings index + sub-pages */}
       <Route path="/DriverSettings" element={<MainContent role={role} type="Settings" />} />

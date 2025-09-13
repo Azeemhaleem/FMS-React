@@ -7,6 +7,8 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 use App\Models\ChargedFine;
 use Stripe\Webhook;
+use App\Models\DriverUser;
+use App\Notifications\DriverEventNotification;
 
 class StripeWebhookController extends Controller
 {
@@ -49,20 +51,57 @@ class StripeWebhookController extends Controller
 
                 $fineIds = array_filter(array_map('intval', explode(',', $fineIdsCsv)));
 
+                try {
+                    DB::table('payments')
+                        ->where('stripe_payment_intent_id', $pi->id)
+                        ->update([
+                            'status'    => 'succeeded',
+                            'paid_at'   => now(),
+                            'updated_at'=> now(),
+                        ]);
+                } catch (\Throwable $t) {
+                    Log::error("PI {$pi->id}: failed to update payments row: " . $t->getMessage());
+                }
+
                 if (empty($fineIds)) {
                     Log::warning("PI {$pi->id}: No fine_ids in metadata.");
                     break;
                 }
 
                 // Mark fines as paid. Use a transaction for safety.
-                DB::transaction(function () use ($fineIds, $pi) {
+                DB::transaction(function () use ($fineIds, $pi, $userIdMeta) {
                     ChargedFine::whereIn('id', $fineIds)
+                        ->when($userIdMeta, fn($q) => $q->where('driver_user_id', (int)$userIdMeta))
                         ->whereNull('paid_at')
                         ->update([
                             'paid_at'           => now(),
-                            'payment_intent_id' => $pi->id,
+                            'updated_at'        => now(),
                         ]);
                 });
+
+                $driverId = $userIdMeta
+            ?: DB::table('payments')->where('stripe_payment_intent_id', $pi->id)->value('driver_user_id');
+
+            if ($driverId) {
+                $driver = DriverUser::find($driverId);
+                if ($driver) {
+                    $amount = number_format(($pi->amount_received ?? $pi->amount) / 100, 2);
+                    $currency = strtoupper($pi->currency ?? 'usd');
+
+                    // Send database (and optionally email) notification to the driver
+                    $driver->notify(new DriverEventNotification(
+                        message: "Payment received: {$amount} {$currency}. Thanks! Your selected fines are now marked as paid.",
+                        type:    'payment.succeeded',
+                        meta: [
+                            'payment_intent_id' => (string) $pi->id,
+                            'amount_cents'      => (int) ($pi->amount_received ?? $pi->amount),
+                            'currency'          => (string) ($pi->currency ?? 'usd'),
+                            'fine_ids'          => $fineIds,
+                            'paid_at'           => now()->toIso8601String(),
+                        ],
+                    ));
+                }
+            }
 
                 Log::info("PI {$pi->id}: Marked fines paid", ['fine_ids' => $fineIds, 'amount' => $pi->amount_received]);
                 break;

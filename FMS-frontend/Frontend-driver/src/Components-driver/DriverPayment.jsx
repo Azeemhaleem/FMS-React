@@ -265,14 +265,21 @@ const payRow = async (rowKey) => {
       <div className="bg-white rounded-4 shadow-sm p-3 p-sm-4" style={{ background: "linear-gradient(135deg,#d9eaff,#fff)" }}>
         <h6 className="fw-semibold mb-2">Paid List</h6>
         <div className="table-responsive">
-          <table className="table align-middle mb-0">
+          <table className="table align-middle mb-0 table-fixed">
+            <colgroup>
+            <col style={{ width: "5%" }} />    {/* Fine ID */}
+            <col style={{ width: "25%" }} />   {/* Fine */}
+            <col style={{ width: "18%" }} />   {/* Issued */}
+            <col style={{ width: "20%" }} />   {/* Deadline */}
+            <col style={{ width: "10%" }} />   {/* Pay */}
+          </colgroup>
             <thead>
               <tr className="text-secondary text-center">
-                <th className="col-1">Fine ID</th>
-                <th className="col-3 text-start">Fine</th>
-                <th className="col-2 text-end">Amount</th>
-                <th className="col-3 nowrap">Issued</th>
-                <th className="col-3 nowrap">Paid</th>
+                <th className="text-start">Fine ID</th>
+                <th className="text-start">Fine</th>
+                <th className="text-start">Amount</th>
+                <th className="text-start">Issued</th>
+                <th className="text-start nowrap">Paid</th>
               </tr>
             </thead>
             <tbody className="text-center">
@@ -283,11 +290,11 @@ const payRow = async (rowKey) => {
               ) : (
                 paid.map((p) => (
                   <tr key={p.id}>
-                    <td>{p.id}</td>
-                    <td className="text-start small">{p.name}</td>
-                    <td className="text-end small">{fmtMoney(p.amount)}</td>
-                    <td className="nowrap small">{fmtDate(p.issued_at)}</td>
-                    <td className="nowrap small">{fmtDate(p.paid_at)}</td>
+                    <td className="text-start">{p.id}</td>
+                    <td className="text-start truncate small">{p.name}</td>
+                    <td className="text-start small">{fmtMoney(p.amount)}</td>
+                    <td className="text-start small">{fmtDate(p.issued_at)}</td>
+                    <td className="text-start nowrap small">{fmtDate(p.paid_at)}</td>
                   </tr>
                 ))
               )}

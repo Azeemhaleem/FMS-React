@@ -238,13 +238,11 @@ export default function StripePay() {
 
 
                             <div className="card-body p-4">
-                                <Elements stripe={stripePromise} options={stripeOptions}>
-                                    <CheckoutForm
-                                        onSuccess={() => navigate("/payment/complete", {
-                                            state: { amount, currency }
-                                        })}
-                                        onCancel={handleBackToPayments}
-                                    />
+                                 <Elements stripe={stripePromise} options={stripeOptions}>
+                                  <CheckoutForm
+                                    clientSecret={clientSecret}   // <-- pass it
+                                    onCancel={handleBackToPayments}
+                                  />
                                 </Elements>
                             </div>
                         </div>
@@ -265,7 +263,7 @@ export default function StripePay() {
     );
 }
 
-function CheckoutForm({ onSuccess, onCancel }) {
+function CheckoutForm({ clientSecret, onCancel }) {
     const stripe = useStripe();
     const elements = useElements();
     const [isProcessing, setIsProcessing] = useState(false);
@@ -281,7 +279,7 @@ function CheckoutForm({ onSuccess, onCancel }) {
         setMessage("");
 
         try {
-            const { error } = await stripe.confirmPayment({
+            const { error, paymentIntent } = await stripe.confirmPayment({
                 elements,
                 confirmParams: {
                     return_url: `${window.location.origin}/payment/complete`
@@ -292,7 +290,10 @@ function CheckoutForm({ onSuccess, onCancel }) {
             if (error) {
                 setMessage(error.message || "Payment failed");
             } else {
-                onSuccess();
+                    const qs = paymentIntent?.id
+                        ? `payment_intent=${encodeURIComponent(paymentIntent.id)}`
+                        : `payment_intent_client_secret=${encodeURIComponent(clientSecret)}`; // use prop
+                      window.location.assign(`/payment/complete?${qs}`);
             }
         } catch (err) {
             setMessage("An unexpected error occurred during payment");
@@ -314,7 +315,7 @@ function CheckoutForm({ onSuccess, onCancel }) {
         setMessage("");
 
         try {
-            const { error } = await stripe.confirmPayment({
+            const { error, paymentIntent } = await stripe.confirmPayment({
                 elements,
                 confirmParams: {
                     return_url: `${window.location.origin}/payment/complete`
@@ -325,7 +326,13 @@ function CheckoutForm({ onSuccess, onCancel }) {
             if (error) {
                 setMessage(error.message || "An unexpected error occurred.");
             } else {
-                onSuccess();
+                const qs =
+                    paymentIntent?.id
+                      ? `payment_intent=${encodeURIComponent(paymentIntent.id)}`
+                      : `payment_intent_client_secret=${encodeURIComponent(
+                          elements._clientSecret || ""
+                        )}`;
+                  window.location.assign(`/payment/complete?${qs}`);
             }
         } catch (err) {
             setMessage("An unexpected error occurred during payment");
