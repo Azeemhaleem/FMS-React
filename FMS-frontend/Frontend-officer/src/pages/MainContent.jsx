@@ -1,6 +1,7 @@
 // src/pages/MainContent.jsx
 import "../styles.css";
 import Footer from '../components/Footer.jsx';
+import FooterHome from '../components/FooterHome.jsx';
 import React, { useState } from "react";
 import { useLocation } from "react-router-dom";
 import Slidebar from "../components/Slidebar";
@@ -161,7 +162,7 @@ function MainContent({ username, image, role, type }) {
             </div>
           </div>
 
-          <Footer />
+          <Footer/>
         </div>
       </div>
     </>

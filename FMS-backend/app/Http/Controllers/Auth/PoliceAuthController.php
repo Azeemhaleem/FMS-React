@@ -151,8 +151,9 @@ class PoliceAuthController extends Controller
         return response()->json([
             'full_name' => $policeInDept?->full_name,
             'police_id' => $policeInDept?->police_id,
-            'station'   => $user->station,     // will work after #2 below
-            'role'      => $user->role_name,
+            'station' => $policeInDept?->p_station,
+            // 'station'   => $user->station,     // will work after #2 below
+            'role' => $user->role_name,
         ]);
     }
 

@@ -21,14 +21,7 @@ export default function ScanPage({ setScanResult }) {
                                         <i className="bi bi-qr-code" />
                                     </div>
 
-                                    <div
-                                        className="d-flex align-items-center justify-content-center mb-3 mx-auto"
-                                        style={{ height: 260, width: "100%" }}
-                                    >
-                                        <div className="d-flex align-items-center justify-content-center mx-5">
-                                            <QrCodeScanner setScanResult={setScanResult} />
-                                        </div>
-                                    </div>
+                                    bn
 
                                     <h3 className="card-title fw-semibold">Scan Driver License QR</h3>
                                     <p className="text-muted mb-1">
