@@ -212,7 +212,7 @@ export default function StripeComplete() {
         if (status === "error") {
             navigate(-1);
         } else {
-            navigate("/driver-payment");
+            navigate("/DriverPayment");
         }
     };
 
@@ -221,7 +221,7 @@ export default function StripeComplete() {
             <div className="container">
                 <div className="row justify-content-center">
                     <div className="col-md-6 col-lg-5">
-                        <div className={`card shadow-lg border-3 ${getCardClass()}`}>
+                        <div className={`card shadow-lg border-3 ${getCardClass()}overflow-hidden`} style={{maxWidth: 560, margin: "0 auto"}}>
                             <div className="card-body p-5">
                                 {/* Status Icon */}
                                 <div className="text-center mb-4">
@@ -249,9 +249,9 @@ export default function StripeComplete() {
 
 
                                 {status === "success" && (
-                                    <div className="alert alert-success d-flex align-items-start mb-4" role="alert">
-                                        <CheckCircle size={20} className="me-2 mt-1 flex-shrink-0" />
-                                        <div>
+                                    <div className="alert alert-success d-flex flex-wrap align-items-start mb-4 wrap-text" role="alert">
+                                  <CheckCircle size={20} className="me-2 mt-1 flex-shrink-0" />
+                                  <div className="flex-grow-1">
                                             <h6 className="alert-heading mb-1">Payment Confirmed</h6>
                                             <small className="mb-0">
                                                 Your payment has been processed successfully. You should receive a confirmation email shortly.
@@ -262,7 +262,7 @@ export default function StripeComplete() {
 
 
                                 {status === "processing" && (
-                                    <div className="alert alert-warning d-flex align-items-start mb-4" role="alert">
+                                    <div className="alert alert-warning d-flex flex-wrap align-items-start mb-4 wrap-text" role="alert">
                                         <Clock size={20} className="me-2 mt-1 flex-shrink-0" />
                                         <div>
                                             <h6 className="alert-heading mb-1">Payment Processing</h6>
@@ -275,7 +275,7 @@ export default function StripeComplete() {
 
 
                                 {status === "error" && (
-                                    <div className="alert alert-danger d-flex align-items-start mb-4" role="alert">
+                                    <div className="alert alert-danger d-flex flex-wrap align-items-start mb-4 wrap-text" role="alert">
                                         <XCircle size={20} className="me-2 mt-1 flex-shrink-0" />
                                         <div>
                                             <h6 className="alert-heading mb-1">Payment Failed</h6>
@@ -310,7 +310,7 @@ export default function StripeComplete() {
 
                                     {status !== "processing" && (
                                         <button
-                                            onClick={() => navigate("/driver-payment")} // Changed from /DriverPayment
+                                            onClick={() => navigate("/DriverPayment")} // Changed from /DriverPayment
                                             className="btn btn-outline-secondary"
                                         >
                                             Back to Payment Dashboard

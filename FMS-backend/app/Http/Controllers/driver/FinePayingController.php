@@ -199,23 +199,27 @@ class FinePayingController extends Controller
 
         $finesDriverReallyHasToPay = $finesResult;
 
-        $totalAmount = 0;
+        $totalAmountLkr = 0;
         foreach ($finesDriverReallyHasToPay as $fine) {
             $fineType = Fine::where('id', $fine->fine_id)->first();
-            $totalAmount += $fineType->amount;
+            $totalAmountLkr += (int) $fineType->amount;
         }
-        $amountInCents = $totalAmount * 100;
+        $amountInCents = max(50, (int) round($totalAmountLkr * 100));
 
         try {
+            $metadata = [
+                'fine_ids' => implode(',', $finesDriverReallyHasToPay->pluck('id')->toArray()), // CHANGED
+                'user_id'  => (string) $request->user()->id,                                     // CHANGED
+            ];
             // ✅ Create PaymentIntent
-            $paymentIntent = $this->paymentService->processPaymentIntent($amountInCents);
+            $paymentIntent = $this->paymentService->processPaymentIntent($amountInCents, $metadata);
 
             // Store payment in database
             DB::table('payments')->insert([
                 'stripe_payment_intent_id' => $paymentIntent->id,
                 'driver_user_id' => $request->user()->id,
                 'charged_fine_ids' => json_encode($finesDriverReallyHasToPay->pluck('id')->toArray()),
-                'amount' => $totalAmount,
+                'amount' => $totalAmountLkr,
                 'currency' => $paymentIntent->currency,
                 'status' => $paymentIntent->status,
                 'created_at' => now(),

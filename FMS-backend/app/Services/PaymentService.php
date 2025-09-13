@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Log;
 
 class PaymentService
 {
+    
     protected $stripeClient;
 
     public function __construct()
@@ -17,24 +18,20 @@ class PaymentService
         $this->stripeClient = new StripeClient(config('services.stripe.secret'));
     }
 
-    public function processPaymentIntent(int $amount)
+    public function processPaymentIntent(int $amount, array $metadata = [], string $currency = 'usd')
     {
         try {
             $paymentIntent = $this->stripeClient->paymentIntents->create([
                 'amount' => $amount,
-                'currency' => 'usd',
-                'payment_method_types' => ['card'],
-                'payment_method' => 'pm_card_visa',
-                'confirmation_method' => 'automatic',
-                'confirm' => true,
+                'currency' => strtolower($currency),
+                'automatic_payment_methods' => ['enabled' => true],
+                'metadata' => $metadata,
+                //'payment_method' => 'pm_card_visa',
+                //'confirmation_method' => 'automatic',
+                //'confirm' => true,
             ]);
 
-            if ($paymentIntent->status === 'succeeded') {
                 return $paymentIntent;
-            } else {
-                Log::warning('Stripe Payment Intent Failed: Status - ' . $paymentIntent->status);
-                return false;
-            }
 
         } catch (ApiErrorException $e) {
             Log::error('Stripe Payment Error: ' . $e->getMessage());
