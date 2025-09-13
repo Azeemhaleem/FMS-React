@@ -2,7 +2,7 @@ import React from "react";
 
 const About = () => {
   return (
-    <div className="container mt-5 p-4 bg-light rounded shadow-sm">
+    <div className="container mt-2 mb-5 p-4 bg-light rounded shadow-sm">
       <h2 className="mb-4">About Fine Management System</h2>
       <p>
         The <strong>Fine Management System (FMS)</strong> is an efficient digital solution designed to streamline the process of issuing, managing, and paying fines. Built to support both traffic authorities and citizens, FMS ensures transparency, convenience, and timely communication.

@@ -12,6 +12,7 @@ use App\Http\Controllers\sAdmin\ChargedFineDetailsController;
 use App\Http\Controllers\sAdmin\DriverDetailsController;
 use App\Http\Controllers\sAdmin\PoliceDetailsController;
 use App\Http\Controllers\sAdmin\PdfGenerateController;
+use App\Http\Controllers\sAdmin\AdminOverviewController;
 
 
 Route::middleware(['auth:sanctum', EnsureSuperAdmin::class, EnsureEmailVerified::class])->group(function () {
@@ -62,4 +63,7 @@ Route::middleware(['auth:sanctum', EnsureSuperAdmin::class, EnsureEmailVerified:
     Route::get(
         's-admin/generate-pdf', [PdfGenerateController::class, 'generatePDF']
         )->name('s-admin.generate-pdf');
+    Route::get(
+        's-admin/overview', [AdminOverviewController::class, 'overview'])
+        ->name('s-admin.overview');
 });

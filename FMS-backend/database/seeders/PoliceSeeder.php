@@ -74,6 +74,26 @@ class PoliceSeeder extends Seeder
             'full_name' => 'Police 10',
             'p_station' => 'Colombo',
         ]);
+        DB::table('police_in_depts')->insert([
+            'police_id' => '1011',
+            'full_name' => 'Police 11',
+        ]);
+        DB::table('police_in_depts')->insert([
+            'police_id' => '1012',
+            'full_name' => 'Police 12',
+        ]);
+        DB::table('police_in_depts')->insert([
+            'police_id' => '1013',
+            'full_name' => 'Police 13',
+        ]);
+        DB::table('police_in_depts')->insert([
+            'police_id' => '1014',
+            'full_name' => 'Police 14',
+        ]);
+        DB::table('police_in_depts')->insert([
+            'police_id' => '1015',
+            'full_name' => 'Police 15',
+        ]);
 
         DB::table('police_users')->insert([
             'username' => 'superadmin1',

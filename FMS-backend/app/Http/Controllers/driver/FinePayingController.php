@@ -237,6 +237,8 @@ class FinePayingController extends Controller
                 'message' => $e->getMessage()
             ], 400);
         }
+
+        
     }
 
     public function CheckIfUserHasToPayTheFine(Request $request) {

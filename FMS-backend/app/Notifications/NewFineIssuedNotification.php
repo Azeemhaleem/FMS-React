@@ -29,10 +29,14 @@ class NewFineIssuedNotification extends Notification implements ShouldQueue
      *
      * @return array<int, string>
      */
-    public function via(object $notifiable): array
-    {
-        return ['mail', 'database'];
+    public function via($notifiable): array
+{
+    $channels = ['database']; // <-- always write to DB so UI works
+    if (!empty($notifiable->receives_email_notifications)) {
+        $channels[] = 'mail'; // <-- only email if toggle is ON
     }
+    return $channels;
+}
 
     /**
      * Get the mail representation of the notification.

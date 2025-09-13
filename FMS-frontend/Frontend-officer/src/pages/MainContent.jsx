@@ -11,12 +11,10 @@ import "bootstrap/dist/css/bootstrap.min.css";
 /* ---- Admin ---- */
 import AdminOverview from "../Components-admin/AdminOverview";
 import AdminSettings from "../Components-admin/Admin-settings";
-import AdminReport from "../Components-admin/Admin-report";
-import AdminOfficers from "../Components-admin/Admin-officers";
-import AdminDrivers from "../Components-admin/Admin-drivers";
 import AdminTrafficPolice from "../Components-admin/Admin-trafficPolice.jsx";
 import AdminHigherPolice from "../Components-admin/Admin-higherPolice.jsx";
 import AssignTrafficPolice from "../Components-admin/AssignTrafficPolice.jsx";
+import AdminOrganize from "../Components-admin/AdminOrganize";
 
 /* ---- Super Admin ---- */
 import SuperAdminOverview from "../Components-Superadmin/SuperAdminOverview";
@@ -111,14 +109,12 @@ function MainContent({ username, image, role, type }) {
                 <>
                   {type === "Overview" && <AdminOverview />}
                   {type === "Settings" && <AdminSettings section={settingsSection} />}
-                  {type === "Report" && <AdminReport />}
-                  {type === "Officers" && <AdminOfficers />}
                   {type === "Notifications" && <PoliceNotifications />}
-                  {type === "Drivers" && <AdminDrivers />}
                   {type === "trafficPolice" && <AdminTrafficPolice />}
                   {type === "higherPolice" && <AdminHigherPolice />}
                   {type === "assignOfficer" && <AssignTrafficPolice />}
                   {type === "Profile" && <PoliceProfile />}
+                  {type === "AdminOrganize" && <AdminOrganize />}
                 </>
               )}
 
@@ -148,7 +144,7 @@ function MainContent({ username, image, role, type }) {
                   {type === "Dashboard" && <OfficerDashboard />}
                   {type === "Notifications" && <PoliceNotifications />}
                   {type === "Settings" && <OfficerSettings section={settingsSection} />}
-                  {type === "Profile" && <OfficerProfile />}
+                  {type === "Profile" && <PoliceProfile />}
                 </>
               )}
 

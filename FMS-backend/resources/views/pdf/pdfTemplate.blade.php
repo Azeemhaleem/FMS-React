@@ -59,30 +59,27 @@
         <div class="subtitle">Generated on: {{ date('Y-m-d H:i:s') }}</div>
     </div>
 
-    <table>
-        <thead>
+    <table width="100%" cellspacing="0" cellpadding="6" border="1">
+    <thead>
+        <tr>
+            <th style="text-align:left;">Charged Fine ID</th>
+            <th style="text-align:left;">Fine</th>        {{-- name instead of id --}}
+            <th style="text-align:left;">Driver License</th>
+            <th style="text-align:left;">Issued At</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach($fines as $f)
             <tr>
-                <th>ID</th>
-                <th>Fine Type ID</th>
-                <th>Driver License Number</th>
-                <th>Issued Date</th>
+                <td>{{ $f->id }}</td>
+                <td>{{ $f->fine_name }}</td>              {{-- <-- here --}}
+                <td>{{ $f->driver_license }}</td>
+                <td>{{ $f->issued_at }}</td>
             </tr>
-        </thead>
-        <tbody>
-            @forelse($fines as $fine)
-                <tr>
-                    <td>{{ $fine->id }}</td>
-                    <td>{{ $fine->fine_id }}</td>
-                    <td>{{ $fine->driver_user_id }}</td>
-                    <td>{{ $fine->issued_at ? $fine->issued_at : 'N/A' }}</td>
-                </tr>
-            @empty
-                <tr>
-                    <td colspan="4" style="text-align: center;">No charged fines found</td>
-                </tr>
-            @endforelse
-        </tbody>
+        @endforeach
+    </tbody>
     </table>
+
 
     <div class="footer">
         Total Fines: {{ $fines->count() }}
