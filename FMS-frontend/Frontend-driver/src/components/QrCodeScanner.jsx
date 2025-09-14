@@ -45,7 +45,7 @@ function QrCodeScanner({ setScanResult }) {
         <div>
             {startScan ? (
                 <div className="d-flex flex-column justify-content-center align-content-center">
-                    <div className="" id="render"></div>
+                    <div className="mx-auto" id="render"></div>
                 </div>
 
             ) : (

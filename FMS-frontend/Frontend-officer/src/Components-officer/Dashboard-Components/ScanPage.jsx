@@ -1,8 +1,8 @@
 import React from "react";
-import QrCodeScanner from "../../components/QrCodeScanner.jsx"; // path adjusted because this file is sibling to OfficerDashboard
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faFileLines } from "@fortawesome/free-solid-svg-icons";
 import "../Officer-styles.css";
+import QrCodeScanner from "../../components/QrCodeScanner.jsx";
 
 export default function ScanPage({ setScanResult }) {
     return (
@@ -20,9 +20,12 @@ export default function ScanPage({ setScanResult }) {
                                     <div className="display-5 text-primary mb-3">
                                         <i className="bi bi-qr-code" />
                                     </div>
-
-                                    bn
-
+                                    <div
+                                        className="help-content bg-white px-lg-4 d-flex justify-content-center align-items-center mx-auto mb-4"
+                                        style={{ height: "35vh", width: "90%" }}
+                                    >
+                                        <QrCodeScanner setScanResult={setScanResult} />
+                                    </div>
                                     <h3 className="card-title fw-semibold">Scan Driver License QR</h3>
                                     <p className="text-muted mb-1">
                                         Scan a driver&rsquo;s QR code to access license information
