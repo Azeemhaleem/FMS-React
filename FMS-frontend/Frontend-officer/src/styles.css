@@ -13,6 +13,10 @@
     position: fixed;
     width: 100%;
   }
+footer .site .social-icons a{
+  text-decoration: none;
+  color: wheat;
+}
   .nav-bar {
     display: flex;
     background-color: white;
