@@ -233,7 +233,10 @@ function Register() {
 
                                             <div className="d-flex justify-content-center align-items-center qrscan mx-auto"
                                                  style={{ height: "45vh", width: "100%" }}>
+                                                <div className="d-flex justify-content-center align-items-center mx-auto" style={{width:'85%'}}>
                                                     <QrCodeScanner setScanResult={setScanResult} />
+                                                </div>
+
                                                 {formik.touched.DriverQr && formik.errors.DriverQr && (
                                                     <Form.Control.Feedback type="invalid">
                                                         {formik.errors.DriverQr}

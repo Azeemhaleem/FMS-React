@@ -39,9 +39,8 @@ body {
 }
 #render {
     max-width: fit-content;
-    max-height: fit-content;
+    max-height: 45vh !important;
     padding: 10px !important;
-    margin:0 auto 0 auto;
 }
 
 #render button {
@@ -72,7 +71,7 @@ body {
 /*}*/
 
 #render__scan_region video{
-    width: 70% !important;
+    width: 75% !important;
     margin:0 auto 0 auto;
 }
 
