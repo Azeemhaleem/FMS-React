@@ -162,7 +162,7 @@ function MainContent({ username, image, role, type }) {
             </div>
           </div>
 
-          <Footer/>
+          <FooterHome/>
         </div>
       </div>
     </>

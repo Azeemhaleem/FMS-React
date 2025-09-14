@@ -8,6 +8,7 @@ import { Button, Form } from "react-bootstrap";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import Login_sm_image from "../assets/login-sm-image.png";
+import LoginImageNew from "../assets/login_image_new.png";
 
 const LoginPolice = () => {
     const [forgetPassword, setForgetPassword] = useState(false);
@@ -36,10 +37,10 @@ const LoginPolice = () => {
             password: Yup.string()
                 .min(8, 'Password must be at least 8 characters')
                 .required('Password is required')
-                // .matches(/[A-Z]/, 'Must contain uppercase')
-                // .matches(/[a-z]/, 'Must contain lowercase')
-                // .matches(/[0-9]/, 'Must contain number')
-                // .matches(/[@$!%*?&]/, 'Must contain special character')
+                .matches(/[A-Z]/, 'Must contain uppercase')
+                .matches(/[a-z]/, 'Must contain lowercase')
+                .matches(/[0-9]/, 'Must contain number')
+                .matches(/[@$!%*?&]/, 'Must contain special character')
                 .test("not-same-as-old", "New password must be different from the old one", function (value) {
                     const { selectedUser } = this.options.context;
                     return value !== selectedUser?.password;
@@ -132,7 +133,7 @@ const LoginPolice = () => {
     return (
         <div className="login-page d-flex justify-content-center align-items-center my-lg-3">
             <div className="login-container d-flex shadow rounded overflow-hidden bg-white" style={{width: '55%'}}>
-                <img src={LoginImage} alt="Login image" className="login-image object-fit-cover"
+                <img src={LoginImageNew} alt="Login image" className="login-image object-fit-cover"
                      style={{width: "39%"}}/>
                 <div className="login-form-container d-flex flex-grow-1 flex-column" style={{padding: "2rem"}}>
 
