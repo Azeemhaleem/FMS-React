@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Carbon;
+
 
 use App\Models\Fine;
 use App\Models\PoliceUser;
@@ -30,6 +32,8 @@ class ChargedFine extends Model
         'paid_at' => 'datetime',
         'expires_at' => 'datetime',
     ];
+
+    protected $appends = ['can_pay', 'deadline_at_iso'];
 
     public function driverUser()
     {
@@ -67,4 +71,30 @@ class ChargedFine extends Model
     {
         return Payment::whereJsonContains('charged_fine_ids', $this->id);
     }
+
+    public function paymentDeadline(): ?Carbon
+    {
+        if ($this->expires_at) return Carbon::parse($this->expires_at);
+        if ($this->issued_at)  return Carbon::parse($this->issued_at)->addDays(14);
+        return null;
+    }
+    public function isPayable(): bool
+    {
+        if ($this->paid_at) return false;
+        if (!empty($this->appeal_requested)) return false;
+        if (!empty($this->pending_delete))   return false;
+
+        $deadline = $this->paymentDeadline();
+        return $deadline ? now()->lt($deadline->endOfDay()) : true;
+    }
+    public function getCanPayAttribute(): bool
+    {
+        return $this->isPayable();
+    }
+
+    public function getDeadlineAtIsoAttribute(): ?string
+    {
+        return optional($this->paymentDeadline())->toIso8601String();
+    }
+
 }

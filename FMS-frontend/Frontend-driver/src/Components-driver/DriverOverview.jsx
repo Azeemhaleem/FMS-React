@@ -79,6 +79,8 @@ export default function DriverOverview() {
                             paid_at: x.paid_at,
                             expires_at: x.expires_at,
                             police_user_id: x.police_user_id,
+                            can_pay: !!x.can_pay,                // ✅ ADDED
+                            deadline_at: x.deadline_at_iso || x.expires_at, // ✅ ADDED (fallback)
                         }))
                         .sort((a, b) => new Date(b.issued_at) - new Date(a.issued_at))
                 );
@@ -115,7 +117,12 @@ export default function DriverOverview() {
 
     // ---------- ACTIONS ----------
     const payOne = async (chargedFineId) => {
+        const row = unpaid.find(u => u.chargedFineId === chargedFineId);
         if (!chargedFineId || !token) return;
+        if (row && row.can_pay === false) {
+          alert(`Payment window closed on ${when(row.deadline_at)}. You must appear in court.`);
+          return;
+        }
         setPageError("");
         setPayingId(chargedFineId);
 
@@ -131,8 +138,11 @@ export default function DriverOverview() {
 
     const payAllNavigate = () => {
         // Get all unpaid CHARGED FINE IDs (not fine IDs)
-        const allUnpaidIds = unpaid.map(chargedFine => chargedFine.chargedFineId);
-
+        const allUnpaidIds = unpaid.filter(f => f.can_pay).map(f => f.chargedFineId); // ✅ only payable
+        if (allUnpaidIds.length === 0) {
+          alert("No fines are payable right now. Some payment windows have closed (court required).");
+          return;
+        }
         // Navigate to payment page with all unpaid charged fine IDs
         navigate("/pay-fines", { state: { fineIds: allUnpaidIds } });
     };
@@ -187,16 +197,15 @@ export default function DriverOverview() {
                                 </div>
                                 <div className="d-flex align-items-center gap-2">
                                     <span className="badge text-bg-light border small">{money(f.amount)}</span>
-                                    <button
-                                        className="btn btn-sm btn-outline-primary ms-auto"
-                                        onClick={() => payOne(f.chargedFineId)} // Pass chargedFineId, not fineId
-                                        disabled={payingId === f.chargedFineId}
-                                        aria-label={`Pay fine ${f.fineId}`}
-                                        style={{width:"10%"}}
-                                    >
-                                        {payingId === f.chargedFineId ? "Paying…" : "Pay"}
-                                    </button>
-                                </div>
+                                <button
+                                  className="btn btn-sm btn-outline-primary ms-auto"
+                                  onClick={() => payOne(f.chargedFineId)}
+                                  disabled={payingId === f.chargedFineId || f.can_pay === false}
+                                  title={f.can_pay ? "Pay this fine" : `Closed on ${when(f.deadline_at)} — court required`}
+                                  style={{ width: "10%" }}
+                                >
+                                  {f.can_pay ? (payingId === f.chargedFineId ? "Paying…" : "Pay") : "Closed"}
+                                </button>                                </div>
                             </li>
                         ))}
                     </ul>

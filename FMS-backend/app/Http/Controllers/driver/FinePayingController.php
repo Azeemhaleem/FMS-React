@@ -245,41 +245,68 @@ class FinePayingController extends Controller
         
     }
 
-    public function CheckIfUserHasToPayTheFine(Request $request) {
-        $finesDriverHasToPay = ChargedFine::where('driver_user_id', $request->user()->id)->where('paid_at', null)->get();
-    
-        if ($finesDriverHasToPay->isEmpty()) {
-            return response()->json([
-                'message' => 'You don\'t have any fines to pay'
-            ], 400);
-        }
-    
-        $requestedFineIds = $request->fineIds ?? [];
-        $validFineIds = $finesDriverHasToPay->pluck('id')->toArray();
-    
-        $finesDriverReallyHasToPay = collect();
-    
-        foreach ($requestedFineIds as $requestedFineId) {
-            if (in_array($requestedFineId, $validFineIds)) {
-                $fineObject = $finesDriverHasToPay->firstWhere('id', $requestedFineId);
-                if ($fineObject) {
-                    $finesDriverReallyHasToPay->push($fineObject);
-                }
-            } else {
-                return response()->json([
-                    'message' => 'Invalid fine ID provided: ' . $requestedFineId
-                ], 400);
-            }
-        }
-    
-        if ($finesDriverReallyHasToPay->isEmpty()) {
-            return response()->json([
-                'message' => 'No valid fine IDs provided from your unpaid fines.'
-            ], 400);
-        }
-    
-        return $finesDriverReallyHasToPay;
+    public function CheckIfUserHasToPayTheFine(Request $request)
+{
+    $finesDriverHasToPay = ChargedFine::where('driver_user_id', $request->user()->id)
+        ->whereNull('paid_at')
+        ->get();
+
+    if ($finesDriverHasToPay->isEmpty()) {
+        return response()->json(['message' => "You don't have any fines to pay"], 400);
     }
+
+    $requestedFineIds = $request->fineIds ?? [];
+    $validFineIds     = $finesDriverHasToPay->pluck('id')->toArray();
+
+    $eligible = collect();
+    $blocked  = []; // collect reasons for user feedback
+
+    foreach ($requestedFineIds as $requestedId) {
+        if (!in_array($requestedId, $validFineIds)) {
+            return response()->json(['message' => 'Invalid fine ID provided: '.$requestedId], 400);
+        }
+        /** @var \App\Models\ChargedFine $fine */
+        $fine = $finesDriverHasToPay->firstWhere('id', $requestedId);
+
+        // ✅ block appealed / pending delete
+        if (!empty($fine->appeal_requested) || !empty($fine->pending_delete)) {
+            $blocked[] = [
+                'id'       => $fine->id,
+                'reason'   => 'Fine is under review',
+                'deadline' => $fine->deadline_at_iso,
+            ];
+            continue;
+        }
+
+        // ✅ block if the 14-day window is closed
+        if (!$fine->isPayable()) {
+            $blocked[] = [
+                'id'       => $fine->id,
+                'reason'   => 'Payment window closed — court required',
+                'deadline' => $fine->deadline_at_iso,
+            ];
+            continue;
+        }
+
+        $eligible->push($fine);
+    }
+
+    if ($eligible->isEmpty()) {
+        return response()->json([
+            'message' => 'No payable fines in your selection.',
+            'blocked' => $blocked,
+        ], 422); // Unprocessable Entity
+    }
+
+    // (Optional) return blocked as well so FE can warn for mixed selections
+    if (!empty($blocked)) {
+        // Not an error: allow paying what’s eligible.
+        // The calling methods already just use what we return.
+    }
+
+    return $eligible;
+}
+
 
     /**
      * Get payment intent details for verification
