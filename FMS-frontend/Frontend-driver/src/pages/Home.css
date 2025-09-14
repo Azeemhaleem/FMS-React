@@ -1,5 +1,12 @@
 html, body, #root, .home-screen { margin: 0; padding: 0; width: 100%; }
 
+.carousel-indicators{
+    margin-left: 0 !important;
+}
+.carousel-control-next, .carousel-control-prev{
+    width: 10% !important;
+}
+
 #navbarNav ul li a p{
     width: fit-content;
     padding: 5px 10px;

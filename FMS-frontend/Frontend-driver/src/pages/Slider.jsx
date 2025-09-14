@@ -1,4 +1,3 @@
-
 import Carousel from "react-bootstrap/Carousel";
 import img1 from "../assets/motor_traffic.png";
 import img2 from "../assets/police.jpg";
