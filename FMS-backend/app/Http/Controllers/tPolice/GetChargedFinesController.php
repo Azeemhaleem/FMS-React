@@ -23,7 +23,7 @@ class GetChargedFinesController extends Controller
             $sendingFines[] = [
                 'id' => $fine->id,
                 'fine_name' => $fine->fine->name,
-                'license_no' => $fine->driverUser->driverInDept->license_no,
+                'license_no' => $fine->driverUser->driverInDept->licence_id_no,
                 'charged_at' => $fine->issued_at
             ];
         }
