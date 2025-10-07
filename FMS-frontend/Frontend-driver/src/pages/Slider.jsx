@@ -1,4 +1,3 @@
-
 import Carousel from "react-bootstrap/Carousel";
 import img1 from "../assets/motor_traffic.png";
 import img2 from "../assets/police.jpg";
@@ -6,13 +5,13 @@ import img3 from "../assets/driver_rules.jpg";
 
 export default function Slider() {
   return (
-    <div className="shadow" style={{ maxWidth: "92%", margin: "20px auto" }}>
+    <div className="shadow" style={{ maxWidth: "92%", margin: "20px auto"}}>
       <Carousel interval={2500} pause="hover" indicators>
         <Carousel.Item>
           <div style={{ background: "#CB9EA3" }}>
             <div className="container py-4">
               <h2 className="text-center mb-4">Motor Department News</h2>
-              <div className="row g-4 align-items-center">
+              <div className="row g-4 align-items-center pb-2" style={{ height: "73vh" }}>
                 <div className="col-lg-4">
                   <img src={img1} alt="Motor Department News" className="img-fluid" />
                 </div>
@@ -47,7 +46,7 @@ export default function Slider() {
           <div style={{ background: "#F4F4FB" }}>
             <div className="container py-4">
               <h2 className="text-center mb-4">Police Updates</h2>
-              <div className="row g-4 align-items-center">
+              <div className="row g-4 align-items-center pb-2" style={{ height: "73vh" }}>
                 <div className="col-lg-6">
                   <img src={img2} alt="Police Updates" className="img-fluid" />
                 </div>
@@ -84,7 +83,7 @@ export default function Slider() {
           <div style={{ background: "#FBDCA2" }}>
             <div className="container py-4">
               <h2 className="text-center mb-4">Driver rules and regulations</h2>
-              <div className="row g-4 align-items-center">
+              <div className="row g-4 align-items-center pb-2" style={{ height: "73vh" }}>
                 <div className="col-lg-6">
                   <img src={img3} alt="Driver rules and regulations" className="img-fluid" />
                 </div>

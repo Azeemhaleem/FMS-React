@@ -76,10 +76,16 @@ return [
         //     'driver' => 'eloquent',
         //     'model' => env('AUTH_MODEL', App\Models\User::class),
         // ],
+        // 'drivers' => [
+        //     'driver' => 'custom_driver_provider',
+        //     'model' => App\Models\DriverUser::class,
+        // ],
+
         'drivers' => [
-            'driver' => 'custom_driver_provider',
+            'driver' => 'eloquent', // Changed from 'custom_driver_provider'
             'model' => App\Models\DriverUser::class,
         ],
+
         'polices' => [
             'driver' => 'eloquent',
             'model' => App\Models\PoliceUser::class,
@@ -89,6 +95,8 @@ return [
         //     'driver' => 'database',
         //     'table' => 'users',
         // ],
+
+        
     ],
 
     /*
@@ -144,4 +152,7 @@ return [
 
     'password_timeout' => env('AUTH_PASSWORD_TIMEOUT', 10800),
 
+    
+
 ];
+

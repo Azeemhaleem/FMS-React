@@ -1,56 +1,58 @@
 import { Html5QrcodeScanner } from "html5-qrcode";
-import React, { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 function QrCodeScanner({ setScanResult }) {
     const scannerRef = useRef(null);
-    const isInitialized = useRef(false);
+    const [startScan, setStartScan] = useState(false);
 
     useEffect(() => {
-        // Prevent multiple initializations
-        if (isInitialized.current) {
-            return;
-        }
-
-        // Mark as initialized immediately
-        isInitialized.current = true;
-
-        // Initialize scanner
-        const scanner = new Html5QrcodeScanner(
-            'render',
-            {
-                qrbox: { width: 500, height: 500 },
-                fps: 5,
-            },
-            false
-        );
-
-        scannerRef.current = scanner;
-
-        // Start scanning
-        scanner.render(
-            (result) => {
-                setScanResult(result);
-            },
-            (error) => {
-                console.warn(error);
-            }
-        );
-
-        // Cleanup function
+        // cleanup if component unmounts or scan stopped
         return () => {
             if (scannerRef.current) {
                 scannerRef.current.clear().catch(err =>
-                    console.warn('Failed to clear scanner:', err)
+                    console.warn("Failed to clear scanner:", err)
                 );
                 scannerRef.current = null;
-                isInitialized.current = false;
             }
         };
-    }, []); // Empty dependency array - only run once
+    }, []);
+
+    // Function to start scanning manually
+    const startScanning = () => {
+        setStartScan(true); // render the container first
+        setTimeout(() => {
+            if (!scannerRef.current) {
+                scannerRef.current = new Html5QrcodeScanner(
+                    "render",
+                    { qrbox: { width: 500, height: 500 }, fps: 5 },
+                    false
+                );
+
+                scannerRef.current.render(
+                    (result) => {
+                        setScanResult(result);
+                    },
+                    (error) => {
+                        console.warn(error);
+                    }
+                );
+            }
+        }, 0); // ensure container is in DOM before render()
+    };
 
     return (
         <div>
-            <div id="render"></div>
+            {startScan ? (
+                <div id="render"></div>
+            ) : (
+                <button
+                    onClick={startScanning}
+                    className="btn btn-dark p-4 sliding-btn fs-6"
+                    id="scan"
+                >
+                    Press here to Start Scanning
+                </button>
+            )}
         </div>
     );
 }

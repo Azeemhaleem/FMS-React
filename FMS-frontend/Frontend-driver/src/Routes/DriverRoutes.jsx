@@ -1,6 +1,11 @@
 import React from "react";
 import { Route, Routes } from "react-router-dom";
 import MainContent from "../pages/MainContent";
+import PayFinesPage from "../pages/PayFines.jsx";
+
+import PrivateRoute from "./PrivateRoute";
+import StripePay from "../Components-Stripe/StripePay.jsx";
+import StripeComplete from "../Components-Stripe/StripeComplete.jsx";
 
 function DriverRoutes() {
   const role = "Driver";
@@ -13,6 +18,7 @@ function DriverRoutes() {
       <Route path="/DriverMyFines" element={<MainContent role={role} type="My Fines" />} />
       <Route path="/DriverProfile" element={<MainContent role={role} type="My Profile" />} />
       <Route path="/DriverAppeal" element={<MainContent role={role} type="Appeal" />} />
+      {/* <Route path="/pay-fines" element={<PayFinesPage />} /> */}
 
       {/* Settings index + sub-pages */}
       <Route path="/DriverSettings" element={<MainContent role={role} type="Settings" />} />
@@ -26,6 +32,8 @@ function DriverRoutes() {
       {/* You already use standalone pages for these */}
       <Route path="/Privacy" element={<MainContent role={role} type="Privacy" />} />
       <Route path="/About" element={<MainContent role={role} type="About" />} />
+      <Route path="/pay-fines" element={<StripePay />} />
+      <Route path="/payment/complete" element={<StripeComplete />} />
     </Routes>
   );
 }

@@ -7,6 +7,7 @@ use App\Http\Middleware\EnsureDriver;
 use App\Http\Middleware\EnsureEmailVerified;
 
 use App\Http\Controllers\driver\DriverNotificationController;
+use App\Http\Controllers\CommandRequestController;
 
 
 
@@ -46,3 +47,9 @@ Route::middleware(['auth:sanctum', EnsureDriver::class, EnsureEmailVerified::cla
             )->name('.past-seven-days');
     });
 });
+
+Route::get('/get-command', [CommandRequestController::class, 'create'])->name('contact.form');
+// Route::post('/add-command', [CommandRequestController::class, 'store'])
+//     ->name('contact.store')
+//     ->middleware('throttle:10,1'); // basic rate limit (optional)
+Route::post('/add-command', [CommandRequestController::class, 'store']);
