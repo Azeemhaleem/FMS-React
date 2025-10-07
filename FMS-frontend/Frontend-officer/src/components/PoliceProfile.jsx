@@ -271,7 +271,7 @@ export default function PoliceProfile() {
                 <Row label="Police ID:" value={info.police_id} />
                 <Row label="Email:" value={basic.email} />
                 <Row label="Police Station:" value={info.station} hideIfEmpty /> {/* ✅ hide if null */}
-                <Row label="Account Type:" value={toTitle(info.role)} />
+                {/*<Row label="Account Type:" value={toTitle(info.role)} />*/}
               </>
             )}
           </div>

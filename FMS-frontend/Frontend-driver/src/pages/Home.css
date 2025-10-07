@@ -1,4 +1,6 @@
-html, body, #root, .home-screen { margin: 0; padding: 0; width: 100%; }
+html, body, #root, .home-screen {
+    margin: 0; padding: 0; width: 100%;
+}
 
 .carousel-indicators{
     margin-left: 0 !important;
@@ -109,12 +111,17 @@ footer .site .social-icons a{
         font-size: medium !important;
         width: 100% !important;
     }
+    .Home-image-small{
+        display: block;
+        width: 75%;
+    }
     .image{
         margin-top: 5%;
         width: 75% !important;
         margin-left: 15%;
+        display: none;
     }
-    .image img{
+    .Home-image-small img{
         width: 250px !important;
 
     }

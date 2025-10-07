@@ -59,6 +59,7 @@ export default function Home() {
         setAdd(true);
     };
 
+
     const closeModal = () => {
         setAdd(false);
         setSendCommand(false);
