@@ -58,4 +58,3 @@ function QrCodeScanner({ setScanResult }) {
 }
 
 export default QrCodeScanner;
-
