@@ -42,6 +42,12 @@ class DriverSeeder extends Seeder
             'email' => 'driver4@email.com',
             'licence_id_no' => 'BC112558',
         ]);
+        DB::table('driver_in_depts')->insert([
+            'license_no' => '30005840626XUGYXSKEP',
+            'full_name' => 'Siyas',
+            'email' => 'siyas@email.com',
+            'licence_id_no' => 'BC937578',
+        ]);
 
         DB::table('driver_users')->insert([
             'driver_in_dept_id' => DriverInDept::where('license_no', '1111')->first()->id,
