@@ -18,7 +18,7 @@ class PaymentService
         $this->stripeClient = new StripeClient(config('services.stripe.secret'));
     }
 
-    public function processPaymentIntent(int $amount, array $metadata = [], string $currency = 'usd')
+    public function processPaymentIntent(int $amount, array $metadata = [], string $currency = 'lkr')
     {
         try {
             $paymentIntent = $this->stripeClient->paymentIntents->create([

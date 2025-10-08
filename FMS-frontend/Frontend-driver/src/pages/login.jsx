@@ -182,7 +182,7 @@ const Login = () => {
                                                     </Form.Control.Feedback>
                                                 </Form.Group>
 
-                                                <Form.Group controlId="" className="mb-4">
+                                                <Form.Group controlId="ForgetPassword" className="mb-4">
                                                     <p><a href="#" className="forget_password"
                                                           onClick={clickForgetPassword}>
                                                         Forget password?</a></p>
