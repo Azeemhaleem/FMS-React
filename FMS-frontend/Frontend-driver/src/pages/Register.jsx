@@ -55,8 +55,8 @@ function Register() {
                 .oneOf([Yup.ref('password'), null], 'Passwords must match')
                 .required('Confirm Password is required'),
             otp: Yup.string().required("OTP is required")
-                .min(6,'OTP must be 6 characters')
-                .max(6,'OTP must be 6 characters')
+                // .min(6,'OTP must be 6 characters')
+                // .max(6,'OTP must be 6 characters')
                 .matches(/[0-9]/, 'OTP must contain only numbers'),
             username: Yup.string().required("Username is required")
                 .min(6, 'Username at lease 6 characters')
@@ -72,6 +72,19 @@ function Register() {
             console.log("Form submitted:", formData);
         }
     });
+
+    const requestOtp = async () =>{
+        try{
+            const response = await api.get('/send-verification-email');
+
+            if(response.status === 200){
+                console.log("Otp requested Successfully!");
+            }
+        }
+        catch (error) {
+            console.error('Otp request failed:', error.response?.data || error.message);
+        }
+    }
 
     const handleAccount = () =>{
         setshowaddAccount(true);
@@ -115,6 +128,7 @@ function Register() {
                 const user = response.data.user;
                 localStorage.setItem('user', JSON.stringify(user));
                 setSelectedDriver(true);
+                requestOtp();
                 alert("Account created. Please verify OTP.");
             }
         } catch (error) {
@@ -130,7 +144,7 @@ function Register() {
         const { otp } = formik.values;
 
         try {
-            const response = await api.post('/verify-email', { otp });
+            const response = await api.post('/verify-email', { token:otp });
 
             if (response.status === 200) {
                 setVerified(true);
@@ -229,26 +243,36 @@ function Register() {
                                             {/*        </div>*/}
                                             {/*    </Form.Group>*/}
                                             {/*</div>*/}
+                                            
                                         <Form.Group>
-
                                             <div className="d-flex justify-content-center align-items-center qrscan mx-auto"
                                                  style={{ height: "45vh", width: "100%" }}>
-                                                <div className="d-flex justify-content-center align-items-center mx-auto" style={{width:'85%'}}>
-                                                    <QrCodeScanner setScanResult={setScanResult} />
-                                                </div>
+                                                {!scanResult ? (
+                                                    <>
+                                                        <div className="d-flex justify-content-center align-items-center mx-auto" style={{ width: '85%' }}>
+                                                            <QrCodeScanner setScanResult={setScanResult} />
+                                                        </div>
 
-                                                {formik.touched.DriverQr && formik.errors.DriverQr && (
-                                                    <Form.Control.Feedback type="invalid">
-                                                        {formik.errors.DriverQr}
-                                                    </Form.Control.Feedback>
+                                                        {formik.touched.DriverQr && formik.errors.DriverQr && (
+                                                            <Form.Control.Feedback type="invalid">
+                                                                {formik.errors.DriverQr}
+                                                            </Form.Control.Feedback>
+                                                        )}
+                                                    </>
+                                                ) : (
+                                                    <div className="d-flex justify-content-center align-items-center" style={{ color: 'green', marginLeft: "25%" }}>
+                                                        <h5>Qr Scanned Successfully!</h5>
+                                                    </div>
                                                 )}
-                                                {formik.values.DriverQr ? (
+
+                                                
+                                                {/* {formik.values.DriverQr ? (
                                                     <div className="d-flex justify-content-center align-items-center" style={{color: 'green',marginLeft:"25%"}}>
                                                         <h5>Qr Scanned Successfully!</h5>
                                                     </div>
                                                 ) : (
                                                     <div id="render"></div>
-                                                )}
+                                                )} */}
                                             </div>
                                         </Form.Group>
 
