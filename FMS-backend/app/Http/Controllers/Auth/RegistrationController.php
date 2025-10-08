@@ -28,7 +28,7 @@ class RegistrationController extends Controller
             'username' => $messege['username'],
             'password' => Hash::make($messege['password'])
         ]);
-        $token = $driverUser->createToken('driver_token')->plainTextToken;
+        $token = $driverUser->createToken('auth_token')->plainTextToken;
         return response()->json([
             'messege' => 'Successfully registered',
             'token' => $token,

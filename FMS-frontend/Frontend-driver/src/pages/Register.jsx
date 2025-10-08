@@ -10,6 +10,7 @@ import {Link} from "react-router-dom";
 import SlideToContinue from "../components/SlideToContinue.jsx";
 import api from "../api/axios";
 import Login_sm_image from "../assets/login-sm-image.png";
+import { useNavigate } from "react-router-dom";
 
 function Register() {
     const [scanResult, setScanResult] = useState(null);
@@ -21,6 +22,7 @@ function Register() {
     const [qrScan, setQrScan] = useState(false);
     const [passwordVisibility, setPasswordVisibility] = useState(false);
     const [confirmPasswordVisibility, setConfirmPasswordVisibility] = useState(false);
+    const navigate = useNavigate();
 
     useEffect(() => {
         if (scanResult) {
@@ -53,8 +55,8 @@ function Register() {
                 .oneOf([Yup.ref('password'), null], 'Passwords must match')
                 .required('Confirm Password is required'),
             otp: Yup.string().required("OTP is required")
-                .min(6,'OTP must be 6 characters')
-                .max(6,'OTP must be 6 characters')
+                // .min(6,'OTP must be 6 characters')
+                // .max(6,'OTP must be 6 characters')
                 .matches(/[0-9]/, 'OTP must contain only numbers'),
             username: Yup.string().required("Username is required")
                 .min(6, 'Username at lease 6 characters')
@@ -70,6 +72,19 @@ function Register() {
             console.log("Form submitted:", formData);
         }
     });
+
+    const requestOtp = async () =>{
+        try{
+            const response = await api.get('/send-verification-email');
+
+            if(response.status === 200){
+                console.log("Otp requested Successfully!");
+            }
+        }
+        catch (error) {
+            console.error('Otp request failed:', error.response?.data || error.message);
+        }
+    }
 
     const handleAccount = () =>{
         setshowaddAccount(true);
@@ -113,6 +128,7 @@ function Register() {
                 const user = response.data.user;
                 localStorage.setItem('user', JSON.stringify(user));
                 setSelectedDriver(true);
+                requestOtp();
                 alert("Account created. Please verify OTP.");
             }
         } catch (error) {
@@ -128,13 +144,13 @@ function Register() {
         const { otp } = formik.values;
 
         try {
-            const response = await api.post('/verify-email', { otp });
+            const response = await api.post('/verify-email', { token:otp });
 
             if (response.status === 200) {
                 setVerified(true);
                 alert("Account Verified Successfully!");
                 closeModal();
-                window.location.reload();
+                navigate('/login');
             } else {
                 setVerified(false);
                 alert("Invalid OTP!");
@@ -227,22 +243,36 @@ function Register() {
                                             {/*        </div>*/}
                                             {/*    </Form.Group>*/}
                                             {/*</div>*/}
+                                            
                                         <Form.Group>
-                                            <div className="d-flex justify-content-center align-items-center qrscan"
+                                            <div className="d-flex justify-content-center align-items-center qrscan mx-auto"
                                                  style={{ height: "45vh", width: "100%" }}>
-                                                <QrCodeScanner setScanResult={setScanResult} />
-                                                {formik.touched.DriverQr && formik.errors.DriverQr && (
-                                                    <Form.Control.Feedback type="invalid">
-                                                        {formik.errors.DriverQr}
-                                                    </Form.Control.Feedback>
+                                                {!scanResult ? (
+                                                    <>
+                                                        <div className="d-flex justify-content-center align-items-center mx-auto" style={{ width: '85%' }}>
+                                                            <QrCodeScanner setScanResult={setScanResult} />
+                                                        </div>
+
+                                                        {formik.touched.DriverQr && formik.errors.DriverQr && (
+                                                            <Form.Control.Feedback type="invalid">
+                                                                {formik.errors.DriverQr}
+                                                            </Form.Control.Feedback>
+                                                        )}
+                                                    </>
+                                                ) : (
+                                                    <div className="d-flex justify-content-center align-items-center" style={{ color: 'green', marginLeft: "25%" }}>
+                                                        <h5>Qr Scanned Successfully!</h5>
+                                                    </div>
                                                 )}
-                                                {formik.values.DriverQr ? (
+
+                                                
+                                                {/* {formik.values.DriverQr ? (
                                                     <div className="d-flex justify-content-center align-items-center" style={{color: 'green',marginLeft:"25%"}}>
                                                         <h5>Qr Scanned Successfully!</h5>
                                                     </div>
                                                 ) : (
                                                     <div id="render"></div>
-                                                )}
+                                                )} */}
                                             </div>
                                         </Form.Group>
 
