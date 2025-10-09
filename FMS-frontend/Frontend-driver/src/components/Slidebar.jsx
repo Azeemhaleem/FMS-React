@@ -1,5 +1,5 @@
 // src/components/Slidebar.jsx
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useRef, useMemo, useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -27,31 +27,63 @@ function Slidebar({ role = "Driver" }) {
   const auth = useMemo(() => ({ headers: { Authorization: `Bearer ${token}` } }), [token]);
 
   const [unreadCount, setUnreadCount] = useState(0);
+  const controllerRef = useRef(null); // [KEPT] abort in-flight request
+  const intervalRef = useRef(null);   // [CHANGED] use this to avoid duplicates
 
-  // Poll unread notifications so the dot stays fresh
   useEffect(() => {
-    if (!token) return;
+    if (!token) return; // if token is null, effect won't run
+
     let cancelled = false;
 
-    const loadUnread = async () => {
+    const loadUnreadCount = async () => {
+      // console.log("➡️ loadUnreadCount", document.visibilityState);
+      if (document.visibilityState === "hidden") return;
+
+      if (controllerRef.current) controllerRef.current.abort();
+      controllerRef.current = new AbortController();
+
       try {
-        const r = await api.get("/driver/notifications/unread", auth);
+        const r = await api.get("/driver/notifications/unread-count", {
+          ...auth,
+          signal: controllerRef.current.signal,
+        });
+
         if (!cancelled) {
-          const count = Array.isArray(r?.data) ? r.data.length : 0;
-          setUnreadCount(count);
+          const next = Number(r?.data?.count ?? 0);
+          setUnreadCount((prev) => (prev !== next ? next : prev));
         }
-      } catch {
-        setUnreadCount(0);
+      } catch (e) {
+        // axios cancel in v1 has e.code === "ERR_CANCELED"
+        if (!cancelled && e.code !== "ERR_CANCELED") {
+          setUnreadCount(0);
+          // console.error("unread-count error:", e);
+        }
       }
     };
 
-    loadUnread();
-    const id = setInterval(loadUnread, 30000); // every 30s
+    // Initial fetch on mount
+    loadUnreadCount();
+
+    // [CHANGED] Only create interval if not already set
+    if (!intervalRef.current) {
+      intervalRef.current = setInterval(loadUnreadCount, 30000);
+    }
+
+    const onVis = () => {
+      if (document.visibilityState === "visible") loadUnreadCount();
+    };
+    document.addEventListener("visibilitychange", onVis);
+
     return () => {
       cancelled = true;
-      clearInterval(id);
+      document.removeEventListener("visibilitychange", onVis);
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null; // [CHANGED] ensure we can recreate cleanly
+      }
+      if (controllerRef.current) controllerRef.current.abort();
     };
-  }, [token, auth]);
+  }, [token, auth]); // [CHANGED] removed didSetup guard entirely
 
   const sidebarOptions = {
     Driver: [
@@ -71,10 +103,8 @@ function Slidebar({ role = "Driver" }) {
         <div key={index} className="sidebar-links mb-2">
           <NavLink
             to={item.link}
-            // className gets `isActive` automatically
             className={({ isActive }) =>
-              `d-flex align-items-center px-3 py-2 rounded-3 text-decoration-none sidebar-link ${
-                isActive ? "sidebar-link--active" : ""
+              `d-flex align-items-center px-3 py-2 rounded-3 text-decoration-none sidebar-link ${isActive ? "sidebar-link--active" : ""
               }`
             }
           >
@@ -89,7 +119,7 @@ function Slidebar({ role = "Driver" }) {
                   {item.text}
                 </span>
 
-                {/* Tiny blue dot when there are unread notifications */}
+                {/* Tiny pink dot when there are unread notifications */}
                 {item.text === "Notifications" && unreadCount > 0 && (
                   <span
                     title={`${unreadCount} unread`}
@@ -113,4 +143,4 @@ function Slidebar({ role = "Driver" }) {
   );
 }
 
-export default Slidebar;
+export default React.memo(Slidebar);

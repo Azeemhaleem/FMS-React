@@ -4,6 +4,7 @@ namespace App\Http\Controllers\driver;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class DriverNotificationController extends Controller
 {
@@ -40,6 +41,15 @@ class DriverNotificationController extends Controller
         $notifications = $driver->unreadNotifications;
         return response()->json($notifications);
     }
+    public function unreadCount(Request $req) {
+    $driver = $req->user();
+
+    $count = Cache::remember("driver:unread_count:{$driver->id}", 10, function () use ($driver) {
+        return $driver->unreadNotifications()->count(); // [CHANGED]
+    });
+
+    return response()->json(['count' => $count], 200);
+}
 
     public function markAsRead(Request $request)
     {
