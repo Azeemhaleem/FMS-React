@@ -57,6 +57,7 @@ class PoliceNotificationController extends Controller
         $police = $request->user();
         $notification = $police->notifications()->where('id', $request->notification_id)->firstOrFail();
         $notification->markAsRead();
+        Cache::forget("police:unread_count:{$police->id}");
         return response()->json([
             'message' => 'Notification id : ' . $notification->id . ' marked as read'
         ], 200);
@@ -77,6 +78,7 @@ class PoliceNotificationController extends Controller
         $police = $request->user();
         $notification = $police->notifications()->where('id', $request->notification_id)->firstOrFail();
         $notification->delete();
+        Cache::forget("police:unread_count:{$police->id}");
         return response()->json([
             'message' => 'Notification id : ' . $notification->id . ' deleted'
         ], 200);
@@ -85,6 +87,7 @@ class PoliceNotificationController extends Controller
     public function deleteAllNotifications(Request $request) {
         $police = $request->user();
         $police->notifications()->delete();
+        Cache::forget("police:unread_count:{$police->id}");
         return response()->json([
             'message' => 'All notifications deleted'
         ], 200);
