@@ -26,7 +26,7 @@ function OfficerOverview() {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
 
-            const data = Array.isArray(response?.data?.data) ? response.data.data : [];
+            const data = Array.isArray(response?.data?.fines) ? response.data.fines : [];
             setNotifications(data);
         } catch (err) {
             console.error("Failed to fetch notifications", err);

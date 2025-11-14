@@ -4,8 +4,8 @@ namespace App\Notifications;
 
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use Illuminate\Notifications\Messages\MailMessage;
 use App\Models\ChargedFine;
 use App\Models\FineAppealRequest;
 
@@ -13,71 +13,67 @@ class FineAppealRequestedNotification extends Notification implements ShouldQueu
 {
     use Queueable;
 
-    protected $chargedFine;
-    protected $appealRequest;
+    protected ChargedFine $chargedFine;
+    protected ?FineAppealRequest $appealRequest;
 
-    /**
-     * Create a new notification instance.
-     */
     public function __construct(ChargedFine $chargedFine)
     {
-        $this->chargedFine = $chargedFine;
+        $this->chargedFine   = $chargedFine->loadMissing('fine', 'driverUser.driverInDept');
         $this->appealRequest = FineAppealRequest::where('fine_id', $chargedFine->id)->first();
     }
 
-    /**
-     * Get the notification's delivery channels.
-     *
-     * @return array<int, string>
-     */
-    public function via(object $notifiable): array
+    public function via($notifiable): array
     {
-        return ['mail', 'database'];
+        $channels = ['database']; // always store in DB
+        if (!empty($notifiable->receives_email_notifications)) {
+            $channels[] = 'mail'; // email only if enabled
+        }
+        return $channels;
     }
 
-    /**
-     * Get the mail representation of the notification.
-     */
     public function toMail(object $notifiable): MailMessage
     {
-        $driverName = $this->chargedFine->driverUser->name;
-        $fineId = $this->chargedFine->id;
-        $appealReason = $this->appealRequest ? $this->appealRequest->reason : 'No reason provided.';
-        $appealDate = $this->appealRequest ? $this->appealRequest->asked_at->format('Y-m-d H:i:s') : 'N/A';
-        $fineIssueDate = $this->chargedFine->issued_at ? $this->chargedFine->issued_at->format('Y-m-d H:i:s') : 'N/A';
+        $meta = $this->buildMeta();
 
         return (new MailMessage)
-                    ->subject('New Fine Appeal Request')
-                    ->line("A new appeal request has been submitted for Fine ID: {$fineId}.")
-                    ->line("Driver Name: {$driverName}")
-                    ->line("Fine Issued On: {$fineIssueDate}")
-                    ->line("Appeal Requested On: {$appealDate}")
-                    ->line("Reason for Appeal:")
-                    ->line($appealReason)
-                    ->action('View Appeal Details', url('/admin/fine-appeals/' . $fineId)) // Replace with your actual admin appeal view URL
-                    ->line('Please review the appeal and take appropriate action.');
+            ->subject('New Fine Appeal Request')
+            ->line(($meta['driver_name'] ?? 'A driver') . ' submitted an appeal.')
+            ->line('Fine: '.($meta['fine_name'] ?? 'N/A').' (ID '.$this->chargedFine->id.')')
+            ->line('Reason: '.($meta['reason'] ?? '—'))
+            ->line('Appeal At: '.($meta['asked_at'] ?? '—'))
+            ->action('Open Appeals', url('/admin/fine-appeals/'.$this->chargedFine->id))
+            ->line('Please review and take action.');
     }
 
-    /**
-     * Get the array representation of the notification.
-     *
-     * @return array<string, mixed>
-     */
     public function toArray(object $notifiable): array
     {
-        $driverName = $this->chargedFine->driverUser->name;
-        $fineId = $this->chargedFine->id;
-        $appealReason = $this->appealRequest ? $this->appealRequest->reason : 'No reason provided.';
-        $appealDate = $this->appealRequest ? $this->appealRequest->asked_at->format('Y-m-d H:i:s') : 'N/A';
-        $fineIssueDate = $this->chargedFine->issued_at ? $this->chargedFine->issued_at->format('Y-m-d H:i:s') : 'N/A';
+        // The frontend looks for message + type + meta
+        return [
+            'message' => 'A new appeal request has been submitted.',
+            'type'    => 'appeal.requested',
+            'meta'    => $this->buildMeta(),
+        ];
+    }
+
+    private function buildMeta(): array
+    {
+        $driver     = $this->chargedFine->driverUser;
+        $dept       = $driver?->driverInDept; // full_name, license_no live here
+        $fine       = $this->chargedFine->fine;
 
         return [
-            'message' => "A new appeal request has been submitted for Fine ID: {$fineId} by {$driverName}.",
-            'fine_id' => $fineId,
-            'driver_name' => $driverName,
-            'appeal_reason' => $appealReason,
-            'appeal_date' => $appealDate,
-            'fine_issue_date' => $fineIssueDate,
+            'fine_id'     => (string) $this->chargedFine->id,
+            'fine_name'   => $fine->name ?? null,
+            'amount'      => $fine->amount ?? null,
+
+            'driver_name' => $dept->full_name
+                ?? $driver?->username
+                ?? null,
+            'license_no'  => $dept->license_no ?? null,
+
+            'reason'      => $this->appealRequest->reason ?? null,
+            'asked_at'    => optional($this->appealRequest?->asked_at)->toIso8601String(),
+            'issued_at'   => optional($this->chargedFine?->issued_at)->toIso8601String(),
         ];
     }
 }

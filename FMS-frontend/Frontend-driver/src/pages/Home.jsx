@@ -1,9 +1,6 @@
  import './Home.css'
  import homeimage from '../assets/1709117986126.png';
  import {useState,useEffect} from "react";
- import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
- import { faBars, faXmark, faPaperPlane, faSquarePhone } from '@fortawesome/free-solid-svg-icons';
- import { faFacebook, faTwitter, faInstagram, faLinkedin } from '@fortawesome/free-brands-svg-icons';
  import Slider from './Slider.jsx'
  import { useFormik } from "formik";
  import * as Yup from "yup";
@@ -12,7 +9,7 @@
  import FooterHome from "../components/FooterHome.jsx";
  import HomeHeader from "../components/HomeHeader.jsx"
 
-export default function Home(){     
+export default function Home(){
      const [command, setCommand] = useState([]);
      const [submitteddata,setSubmitteddata] = useState(null);
      const [sendCommand, setSendCommand] = useState(false);
@@ -62,7 +59,7 @@ export default function Home(){
      const closeModal = () => {
          setAdd(false);
          setSendCommand(false);
-         setSubmitteddata(null);   
+         setSubmitteddata(null);
      };
 
      const addCommand = (submittedData) => {
@@ -94,19 +91,22 @@ export default function Home(){
                              intuitive interface, enabling law enforcement to
                              issue, track, and manage fines efficiently. It simplifies workflows, reduces administrative
                              tasks, and ensures faster, more accurate handling of violations.</p>
-                         <div className="d-flex justify-content-start ms-lg-5 ms-2">
-                             <button className="btn w-25 me-3 rounded py-2"
-                                     style={{backgroundColor: "#24243E", maxWidth: "110px"}}><Link to="/register"
+                         <div className="Home-image-small d-lg-none w-100 mb-4">
+                             <img src={homeimage} alt="" className="d-flex mx-auto"/>
+                         </div>
+                         <div className="d-flex justify-content-start ms-lg-5 mt-lg-5">
+                             <button className="btn w-25 me-5 rounded py-2"
+                                     style={{backgroundColor: "#24243E", maxWidth: "180px"}}><Link to="/register"
                                                                                                    className="text-decoration-none text-white">SignUp</Link>
                              </button>
                              <button className="btn w-25 rounded py-2"
-                                     style={{backgroundColor: "#24243E", maxWidth: "110px"}}><Link to="/login"
+                                     style={{backgroundColor: "#24243E", maxWidth: "180px"}}><Link to="/login"
                                                                                                    className="text-decoration-none text-white">LogIn</Link>
                              </button>
                          </div>
                      </div>
                  </div>
-                 <div className="image float-lg-end d-flex justify-content-lg-end">
+                 <div className="image float-lg-end d-lg-flex justify-content-lg-end">
                      <img src={homeimage} alt="" style={{width: '300px', marginRight: "20%"}}/>
                  </div>
              </section>
@@ -115,7 +115,7 @@ export default function Home(){
                      <h2>About-Us</h2>
                      <Slider/>
                  </div>
-             </section> 
+             </section>
              <section id="contact-us">
                  <div className="contact">
                      <h2>Contact-Us</h2>
@@ -204,10 +204,10 @@ export default function Home(){
                          </div>
                      </div>
                  </div>
-             </section> 
+             </section>
              <FooterHome/>
          </div>
-     
+
 ) }
 
 

@@ -59,6 +59,19 @@ class FineAppealController extends Controller
             $trafficPolice?->notify(new FineAppealRequestedNotification($fine));
         }
 
+        // Notify the driver so it appears in their Notifications page
+        $driver->notify(new \App\Notifications\DriverEventNotification(
+            message: 'Your appeal was submitted and is pending review.',
+            type:    'appeal.submitted',
+            meta: [
+                'fine_id'    => (string) $fine->id,
+                'fine_name'  => optional($fine->fine)->name,
+                'amount'     => optional($fine->fine)->amount,
+                'asked_at'   => now()->toIso8601String(),
+            ],
+        ));
+
+
         return response()->json([
             'id'          => (string) $created->id,
             'fine_id'     => (string) $created->fine_id,

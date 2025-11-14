@@ -245,28 +245,15 @@ function Register() {
                                             {/*</div>*/}
                                             
                                         <Form.Group>
-                                            <div className="d-flex justify-content-center align-items-center qrscan mx-auto"
+                                            <div className="d-flex justify-content-center align-items-center qrscan"
                                                  style={{ height: "45vh", width: "100%" }}>
-                                                {!scanResult ? (
-                                                    <>
-                                                        <div className="d-flex justify-content-center align-items-center mx-auto" style={{ width: '85%' }}>
-                                                            <QrCodeScanner setScanResult={setScanResult} />
-                                                        </div>
-
-                                                        {formik.touched.DriverQr && formik.errors.DriverQr && (
-                                                            <Form.Control.Feedback type="invalid">
-                                                                {formik.errors.DriverQr}
-                                                            </Form.Control.Feedback>
-                                                        )}
-                                                    </>
-                                                ) : (
-                                                    <div className="d-flex justify-content-center align-items-center" style={{ color: 'green', marginLeft: "25%" }}>
-                                                        <h5>Qr Scanned Successfully!</h5>
-                                                    </div>
+                                                <QrCodeScanner setScanResult={setScanResult} />
+                                                {formik.touched.DriverQr && formik.errors.DriverQr && (
+                                                    <Form.Control.Feedback type="invalid">
+                                                        {formik.errors.DriverQr}
+                                                    </Form.Control.Feedback>
                                                 )}
-
-                                                
-                                                {/* {formik.values.DriverQr ? (
+                                                {formik.values.DriverQr ? (
                                                     <div className="d-flex justify-content-center align-items-center" style={{color: 'green',marginLeft:"25%"}}>
                                                         <h5>Qr Scanned Successfully!</h5>
                                                     </div>

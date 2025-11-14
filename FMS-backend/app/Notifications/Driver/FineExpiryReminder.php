@@ -18,10 +18,14 @@ class FineExpiryReminder extends Notification implements ShouldQueue
         $this->fine = $fine;
     }
 
-    public function via($notifiable)
-    {
-        return ['mail', 'database'];
+    public function via($notifiable): array
+{
+    $channels = ['database']; // <-- always write to DB so UI works
+    if (!empty($notifiable->receives_email_notifications)) {
+        $channels[] = 'mail'; // <-- only email if toggle is ON
     }
+    return $channels;
+}
 
     public function toMail($notifiable)
     {
@@ -34,10 +38,14 @@ class FineExpiryReminder extends Notification implements ShouldQueue
     }
 
     public function toArray($notifiable)
-    {
-        return [
-            'fine_id' => $this->fine->id,
-            'message' => 'Fine expiring in 2 days',
-        ];
-    }
+{
+    return [
+        'fine_id' => $this->fine->id,
+        'message' => "Fine #{$this->fine->id} expires in 2 days",
+        'type'    => 'fine.expiring',
+        'issued_at' => optional($this->fine->issued_at)->toIso8601String(),
+        'expires_at'=> optional($this->fine->expires_at)->toIso8601String(),
+    ];
+}
+
 }

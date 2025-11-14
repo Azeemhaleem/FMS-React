@@ -1,350 +1,238 @@
-import "./styles/overview-styles.css"
-import React from "react";
-import Chart from "react-apexcharts";
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPercentage, faPause, faChartLine ,} from '@fortawesome/free-solid-svg-icons';
-import { FaClipboard, FaPencilAlt, FaUser } from "react-icons/fa";
+import React, { useEffect, useMemo, useState } from "react";
+import api from "../api/axios";
+import {
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  PieChart,
+  Pie,
+  Cell,
+} from "recharts";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faRotateRight } from "@fortawesome/free-solid-svg-icons";
 
 
-function SuperAdminOverview() {
+/* ---------- helpers ---------- */
+const fmtMoney = (n) =>
+  typeof n === "number"
+    ? new Intl.NumberFormat("en-LK", {
+        style: "currency",
+        currency: "LKR",
+        maximumFractionDigits: 0,
+      }).format(n)
+    : "—";
 
-  const options = {
-    chart: {
-      height: 150,
-      type: "radialBar",
-      toolbar: {
-        show: false, 
-      },
-    },
-    plotOptions: {
-      radialBar: {
-        startAngle: -135,
-        endAngle: 225,
-        hollow: {
-          margin: 0,
-          size: "70%",
-          background: "transparent",
-        },
-        track: {
-          background: "#d6dfff", 
-          strokeWidth: "100%",
-        },
-        dataLabels: {
-          show: true,
-          name: {
-            show: false, 
-          },
-          value: {
-            formatter: function (val) {
-              return `${val}%`;
-            },
-            fontSize: "22px",
-            fontWeight: "bold",
-            color: "#6e6e6e",
-            show: true,
-          },
-        },
-      },
-    },
-    fill: {
-      colors: ["#6A5ACD"],
-      stops: [0, 100], 
-    },
-    stroke: {
-      lineCap: "round",
-    },
+const fmtDateTime = (iso) => {
+  const d = iso ? new Date(iso) : new Date();
+  return d.toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" });
+};
+
+const softCard = {
+  background: "#fff",
+  borderRadius: 14,
+  boxShadow: "0 6px 18px rgba(17, 24, 39, .06)",
+};
+
+/* ---------- component ---------- */
+export default function SuperAdminOverview() {
+  const [payload, setPayload] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [msg, setMsg] = useState("");
+
+  const load = async () => {
+    setLoading(true);
+    setMsg("");
+    try {
+      const res = await api.get("s-admin/overview");
+      setPayload(res?.data ?? {});
+    } catch (e) {
+      setMsg(e?.response?.data?.message || "Failed to load overview.");
+      setPayload(null);
+    } finally {
+      setLoading(false);
+    }
   };
 
-    const iconStyle = {
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      height: '50px',
-      width: '50px',
-      borderRadius: '50%',
-      backgroundColor: '',
-      color: 'white',
-    };
-  
-  
+  useEffect(() => {
+    load();
+  }, []);
 
-  const finePrecentage=[81];
-  const paymentCollectedPrecentage=[60];
-  const paymentProccessingPrecentage=[50];
+  /* ---------- normalize from backend structure ---------- */
+  const totals = {
+    recordedAmount: payload?.totals?.recorded?.amount ?? 0,
+    recordedCount: payload?.totals?.recorded?.count ?? 0,
+    paidAmount: payload?.totals?.paid?.amount ?? 0,
+    paidCount: payload?.totals?.paid?.count ?? 0,
+    processingCount: payload?.totals?.processingCount ?? 0,
+  };
+  const windows = {
+    last7Recorded: payload?.windows?.last7days?.recorded ?? 0,
+    last7Paid: payload?.windows?.last7days?.paid ?? 0,
+    last24Recorded: payload?.windows?.last24h?.recorded ?? 0,
+    last24Paid: payload?.windows?.last24h?.paid ?? 0,
+    last24Drivers: payload?.windows?.last24h?.newDrivers ?? 0,
+  };
+  const recent = Array.isArray(payload?.recent) ? payload.recent : [];
+  const asOf = payload?.as_of;
 
+  /* ---------- charts data ---------- */
+  // 7-day bar (we only have totals for the 7-day window; show a two-bar comparison)
+  const last7Data = useMemo(
+    () => [
+      { name: "Recorded", value: Number(windows.last7Recorded || 0) },
+      { name: "Paid", value: Number(windows.last7Paid || 0) },
+    ],
+    [windows.last7Recorded, windows.last7Paid]
+  );
 
+  // donut for paid vs unpaid *amounts* (derived from totals)
+  const unpaidAmount = Math.max(totals.recordedAmount - totals.paidAmount, 0);
+  const donutData = useMemo(
+    () => [
+      { name: "Paid", value: Number(totals.paidAmount || 0) },
+      { name: "Unpaid", value: Number(unpaidAmount || 0) },
+    ],
+    [totals.paidAmount, unpaidAmount]
+  );
+  const donutColors = ["#10b981", "#f59e0b"];
 
-   const recentFines = {
-     fine1: [
-       { name:"Sandali shela", licenseId: "851234",fineId:"6789",payment:"Due",status:"Approved" },
-     ],
-     fine2: [
-       { name: "Sarasi", licenseId: "45678",fineId:"6789",payment:"Due",status:"Declined" },
-     ],
-     fine3: [
-       { name: "Sandali", licenseId: "12345",fineId:"6789",payment:"Due",status:"Pending" },
-     ],
-     fine4: [
-       { name: "Sandali", licenseId: "12345",fineId:"6789",payment:"Due",status:"Pending" },
-     ],
-     fine5: [
-       { name: "Sandali", licenseId: "12345",fineId:"6789",payment:"Due",status:"Approved" },
-     ],
-     fine6: [
-       { name: "Sandali", licenseId: "12345",fineId:"6789",payment:"Due",status:"Pending" },
-     ],
-     fine8: [
-       { name: "Sandali", licenseId: "12345",fineId:"6789",payment:"Due",status:"Approved" },
-     ],
-     fine9: [
-       { name: "Sandali", licenseId: "12345",fineId:"6789",payment:"Due",status:"Pending" },
-     ],
-     fine14: [
-       { name: "Sandali", licenseId: "12345",fineId:"6789",payment:"Due",status:"Pending" },
-     ],
-     fine10: [
-       { name: "Sandali", licenseId: "12345",fineId:"6789",payment:"Due",status:"Pending" },
-     ],
-     fine11: [
-       { name: "Sandali", licenseId: "12345",fineId:"6789",payment:"Due",status:"Pending" },
-     ],
-     fine12: [
-       { name: "Sandali", licenseId: "12345",fineId:"6789",payment:"Due",status:"Pending" },
-     ],
-     fine13: [
-       { name: "Sandali", licenseId: "12345",fineId:"6789",payment:"Due",status:"Pending" },
-     ],
-   }  ;
-
-    return(
-      
-        <>
-    
-  
-    <div className="row mt-4 mb-5" >
-   
-    
-      {/* first colomn */}
-        <div className="col-12 col-lg-9 mb-4">
-        {/* card row */}
-        <div className="row  card-row">
-
-        <div className="card-info">
-        <div style={{ ...iconStyle, backgroundColor: 'purple' }}>
-        <FontAwesomeIcon style={{padding:"5px",margin:"5px"}} icon={faPercentage} />
-      </div>
-
-          <div class="d-flex justify-content-between align-items-center" style={{margin:"15px"}}>
-                <div class="flex-grow-1" >
-                  <h5 class="mb-0 fw-bold">Total Fines Recorded</h5>
-                  <h6 class="mb-0 text-dark">LKR 25,0240</h6>
-                  <small class="text-muted">Last 7 Days</small>
-                </div>
-                <div class="circle-chart">
-                <Chart options={options} series={finePrecentage} type="radialBar" height={350} />
-                </div>
-         </div>
+  return (
+    <div
+      className="container-fluid py-4"
+      style={{
+        background: "linear-gradient(180deg,#e9f2ff 0,#dbe9ff 100%)",
+        minHeight: "100vh",
+      }}
+    >
+      {/* Header */}
+      <div className="d-flex align-items-center mb-5 mt-2">
+        <h3 className="fw-bold m-0">Admin Overview</h3>
+        <div className="ms-auto small text-muted">
+          as of {fmtDateTime(asOf)}
         </div>
-        <div className="card-info">
-
-        <div style={{ ...iconStyle, backgroundColor: 'red' }}>
-        <FontAwesomeIcon style={{padding:"5px",margin:"5px"}} icon={faPause} />
-      </div>
-
-          <div class="d-flex justify-content-between align-items-center" style={{margin:"15px"}}>
-                <div class="flex-grow-1" >
-                  <h5 class="mb-0 fw-bold">Total Payment Collected</h5>
-                  <h6 class="mb-0 text-dark">LKR 25,0240</h6>
-                  <small class="text-muted">Last 7 Days</small>
-                </div>
-                <div class="circle-chart">
-                <Chart options={options} series={paymentCollectedPrecentage} type="radialBar" height={350} />
-                </div>
-         </div>
-         
-        </div>
-        <div className="card-info">
-
-        <div style={{ ...iconStyle, backgroundColor: 'green' }}>
-        <FontAwesomeIcon style={{padding:"5px",margin:"5px"}} icon={faChartLine} />
-      </div>
-
-          <div class="d-flex justify-content-between align-items-center"style={{margin:"15px"}}>
-                <div class="flex-grow-1" >
-                  <h5 class="mb-0 fw-bold">Total Payment Processing</h5>
-                  <h6 class="mb-0 text-dark">LKR 25,0240</h6>
-                  <small class="text-muted">Last 7 Days</small>
-                </div>
-                <div class="circle-chart">
-                <Chart options={options} series={paymentProccessingPrecentage} type="radialBar" height={350} />
-                </div>
-         </div>
-        </div>
-      </div>
-
-      {/* recent fines row */}
-    <div className="col-12 col-md-12 col-lg-8 ">
-   
-    <div className="row-1 recent-fines mt-3" style={{marginLeft:"15%"}}>
-    <div className="container mt-4" style={{padding:"0"}}>
-      <h5 className="fw-bold mb-3 text-black text-center" >Recent Updates</h5>
-      <div className="card shadow-sm p-3 rounded-4 mx-auto w-100" 
-      style={{ 
-        maxWidth: "100%", 
-        width: "100%" }}
+      <button
+        className="w-25 btn btn-small btn ms-2 d-flex align-items-center"
+        onClick={load}
+        disabled={loading}
+        title="Refresh"
       >
+        <FontAwesomeIcon
+          icon={faRotateRight}
+          style={{color:"blue"}}
+          spin={loading}   // animate when loading
+          className="me-1"
+        />
+      </button>
 
-        {/* Update 1 */}
-          
-          <div className="mb-2">
-          <p className="mb-1" style={{ fontSize:'0.9rem'  }}>
-             <span className="small fw-bold">MIKE TYSON</span>{" "}<span className="small text-muted mb-1">paid 2000LKR
-            Fine ID - 2532 License No - 3456</span>{" "}
-            <div className="small text-muted min">2 Minutes Ago</div>
-            </p>
-          </div> 
-        <hr />
-        {/* Update 2 */}
-        <div className="mb-2">
-          <p className="mb-1" style={{ fontSize: '12px' }}>
-            <span className="small fw-bold">DIANA AYI</span>{" "}
-            <span className="small text-muted mb-1">
-              violation Recorded Fine ID - 3675 License No - 2254
-            </span>{" "}
-            <div className="small text-muted min">2 Minutes Ago</div>
-          </p>
-
-          </div> 
-
-        <hr />
-        {/* Update 3 */}
-        <div className="mb-2">
-           
-            <p className="mb-1"style={{ fontSize: '12px' }}>
-             <span className="small fw-bold">MIKE TYSON</span>{" "}<span className="small text-muted mb-1"> account created as a driver
-             License No - 3378</span>{" "}
-            <div className="small text-muted min">5 Minutes Ago</div></p>
-          </div>
-        </div>
-    
       </div>
-    </div>
-    </div>
-    </div>
 
-      {/* second colomn */}
-   <div className="col-12 col-lg-3 mt-2" >
-      <div className="container">
-      
-  {/* Sale Analytics Section */}
-  <div className="row  sale-analytics" style={{marginLeft:"15%"}}>
- 
+      {msg && <div className="alert alert-danger">{msg}</div>}
 
-      {/* Recorded Fines */}
-      <div className="d-flex align-items-center justify-content-between p-3 mb-4 rounded-4" 
-      style={{ 
-          backgroundColor: "#fff5f5",
-          boxShadow: "rgba(0, 0, 0, 0.19) 0px 10px 20px, rgba(0, 0, 0, 0.23) 0px 6px 6px",
-         
-        }}>
-        <div className="d-flex align-items-center">
-          <div className="rounded-circle align-items-center me-3"
-            style={{
-              backgroundColor: "#5A4CD1",
-              color: "#fff",
-              width: "40px",
-              height: "40px",
-              borderRadius: "50%", padding: "9.5px" 
-            }}
-          >
-        <FaClipboard color="#fff" size="20px" />
-          </div>
-          <div>
-            <p className="mb-1 fw-bold" style={{ fontSize: "12px" }}>RECORDED FINES</p>
-            <p className="small text-muted mb-0">Last 24 hours</p>
+      {/* KPI row */}
+      <div className="row g-3 mb-4">
+        <div className="col-12 col-md-4">
+          <div style={softCard} className="p-3 h-100">
+            <div className="d-flex align-items-center mb-2">
+              <span className="rounded-circle me-2" style={{ width: 10, height: 10, background: "#7c3aed" }} />
+              <span className="text-muted">Total Fines Recorded</span>
+            </div>
+            <div className="display-6 fw-bold">{fmtMoney(totals.recordedAmount)}</div>
+            <div className="text-muted">{totals.recordedCount} fines</div>
           </div>
         </div>
-        <div>
-          <p className="fw-bold text-success mb-1">+39%</p>
-          <p className="fw-bold fs-5 mb-0">203</p>
+        <div className="col-12 col-md-4">
+          <div style={softCard} className="p-3 h-100">
+            <div className="d-flex align-items-center mb-2">
+              <span className="rounded-circle me-2" style={{ width: 10, height: 10, background: "#0ea5e9" }} />
+              <span className="text-muted">Total Payment Collected</span>
+            </div>
+            <div className="display-6 fw-bold">{fmtMoney(totals.paidAmount)}</div>
+            <div className="text-muted">{totals.paidCount} fines paid</div>
+          </div>
+        </div>
+        <div className="col-12 col-md-4">
+          <div style={softCard} className="p-3 h-100">
+            <div className="d-flex align-items-center mb-2">
+              <span className="rounded-circle me-2" style={{ width: 10, height: 10, background: "#34d399" }} />
+              <span className="text-muted">Currently Processing</span>
+            </div>
+            <div className="display-6 fw-bold">{totals.processingCount}</div>
+            <div className="text-muted">unpaid & active</div>
+          </div>
         </div>
       </div>
 
-      {/* Payment Received */}
-      <div
-        className="d-flex align-items-center justify-content-between p-3 mb-4 rounded-4"
-        style={{ 
-          backgroundColor: "#fff5f5",
-          boxShadow: "rgba(0, 0, 0, 0.19) 0px 10px 20px, rgba(0, 0, 0, 0.23) 0px 6px 6px"
-        }}
-      >
-        <div className="d-flex align-items-center">
-        <div className="rounded-circle align-items-center me-3"
-            style={{
-              backgroundColor: "#FF5C5C",
-              color: "#fff",
-              width: "40px",
-              height: "40px",
-              borderRadius: "50%", padding: "9.5px" 
-            }}
-          >
-        <FaPencilAlt color="#fff" size="20px" />
+      {/* Charts + Right tiles */}
+      <div className="row g-3 mb-4">
+        <div className="col-12">
+          <div style={softCard} className="p-3">
+            <div className="fw-semibold mb-2">Last 7 days — Recorded vs Paid</div>
+            <div style={{ height: 320 }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={last7Data} barSize={60}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="name" />
+                  <YAxis allowDecimals={false} />
+                  <Tooltip />
+                  <Legend />
+                  <Bar dataKey="value" name="Count" fill="#6366f1" radius={[8, 8, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
           </div>
-          <div>
-            <p className="mb-1 fw-bold fs-10" style={{ fontSize: "12px" }}>PAYMENT RECEIVED FINES</p>
-            <p className="small text-muted mb-0">Last 24 hours</p>
+
+          <div className="mt-3" style={softCard}>
+            <div className="p-3">
+              <div className="fw-semibold mb-2 mt-2">Paid vs Unpaid (Amount)</div>
+              <div className="row m-2">
+                <div className="col-12 col-lg-6 m-0" style={{ height: 280 }}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Tooltip formatter={(v) => fmtMoney(v)}/>
+                     
+                      <Pie
+                        data={donutData}
+                        dataKey="value"
+                        nameKey="name"
+                        innerRadius={70}
+                        outerRadius={110}
+                        paddingAngle={3}
+                      >
+                        {donutData.map((entry, i) => (
+                          <Cell key={`slice-${i}`} fill={donutColors[i % donutColors.length]} />
+                        ))}
+                      </Pie>
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+                <div className="col-12 col-lg-6 d-flex flex-column justify-content-center">
+                  <div className="gap-2 d-flex align-items-center mb-2">
+                    <span className="w-25 badge me-2" style={{ background: "#10b981" }}>
+                      Paid
+                    </span>
+                    <span className="fw-semibold">{fmtMoney(totals.paidAmount)}</span>
+                  </div>
+                  <div className="gap-2 d-flex align-items-center">
+                    <span className="w-25 badge me-2" style={{ background: "#f59e0b" }}>
+                      Unpaid
+                    </span>
+                    <span className="fw-semibold">{fmtMoney(unpaidAmount)}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
-        <div>
-          <p className="fw-bold text-danger mb-1">-17%</p>
-          <p className="fw-bold fs-5 mb-0">102</p>
-        </div>
+
+        
       </div>
 
-      {/* New Drivers */}
-      <div
-        className="d-flex align-items-center justify-content-between p-3 mb-4 rounded-4"
-        style={{ 
-          backgroundColor: "#fff5f5",
-          boxShadow: "rgba(0, 0, 0, 0.19) 0px 10px 20px, rgba(0, 0, 0, 0.23) 0px 6px 6px"
-        }}
-      >
-        <div className="d-flex align-items-center">
-        <div className="rounded-circle align-items-center me-3"
-            style={{
-              backgroundColor: "#00FF94",
-              color: "#fff",
-              width: "40px",
-              height: "40px",
-              borderRadius: "50%", padding: "9.5px" 
-            }}
-          >
-        <FaUser color="#fff" size="20px" />
-          </div>
-          <div>
-            <p className="mb-1 fw-bold" style={{ fontSize: "12px" }}>NEW DRIVERS</p>
-            <p className="small text-muted mb-0">Last 24 hours</p>
-          </div>
-        </div>
-        <div>
-          <p className="fw-bold text-success mb-1">+25%</p>
-          <p className="fw-bold fs-5 mb-0">300</p>
-        </div>
-      </div>
-      </div>
-      
       
     </div>
-  </div>
-
-
-</div>
-
-  
-</>
-
-    );
-
+  );
 }
-
-export default SuperAdminOverview;

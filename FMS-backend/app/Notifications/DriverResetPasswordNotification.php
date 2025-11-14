@@ -20,9 +20,13 @@ class DriverResetPasswordNotification extends Notification implements ShouldQueu
     }
 
     public function via($notifiable): array
-    {
-        return ['mail'];
+{
+    $channels = ['database']; // <-- always write to DB so UI works
+    if (!empty($notifiable->receives_email_notifications)) {
+        $channels[] = 'mail'; // <-- only email if toggle is ON
     }
+    return $channels;
+}
 
     public function toMail($notifiable): MailMessage
     {

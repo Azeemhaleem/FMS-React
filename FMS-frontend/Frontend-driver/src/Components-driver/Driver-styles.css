@@ -22,6 +22,9 @@
 #render__dashboard_section{
     padding:0 !important;
 }
+#render__scan_region video{
+    width: 100% !important;
+}
 /*button*/
 
 #render__dashboard_section div div{

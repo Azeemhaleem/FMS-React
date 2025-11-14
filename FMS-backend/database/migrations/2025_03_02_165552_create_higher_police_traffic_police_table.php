@@ -12,17 +12,29 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('higher_traffic_police', function (Blueprint $table) {
-            $table->id();
-            $table->unsignedBigInteger('higher_police_id');
-            $table->unsignedBigInteger('traffic_police_id');
-            $table->timestamp('assigned_at')->nullable();
-            $table->timestamp('unassigned_at')->nullable();
-            $table->unique(['higher_police_id', 'traffic_police_id']);
-            $table->timestamps();
+        $table->id();
 
-            $table->foreign('higher_police_id')->references('police_id')->on('police_in_depts')->onDelete('cascade');
-            $table->foreign('traffic_police_id')->references('police_id')->on('police_in_depts')->onDelete('cascade');
-        });
+        // match police_in_depts.police_id (varchar)
+        $table->string('higher_police_id');
+        $table->string('traffic_police_id');
+
+        $table->timestamp('assigned_at')->nullable();
+        $table->timestamp('unassigned_at')->nullable();
+        $table->timestamps();
+
+        // lookups
+        $table->index('higher_police_id');
+        $table->index('traffic_police_id');
+
+        // one active assignment per traffic officer
+        $table->unique(['traffic_police_id', 'unassigned_at'], 'uniq_active_traffic');
+
+        $table->foreign('higher_police_id')
+            ->references('police_id')->on('police_in_depts')->cascadeOnDelete();
+        $table->foreign('traffic_police_id')
+            ->references('police_id')->on('police_in_depts')->cascadeOnDelete();
+    });
+
     }
 
     /**

@@ -10,7 +10,7 @@
 body {
     font-family: 'Roboto', sans-serif;
     color: #333;
-    background-color: #b8dff8 !important;
+    background-color: #eef3ff !important;
 }
 
 nav ul li {
@@ -94,7 +94,7 @@ Label{
 }
 
 .btn-submit {
-    background-color: #24243E;
+    background-color: #4738A8;
     color: #fff;
     border: none;
     padding: 0.8rem 1.5rem;
@@ -107,7 +107,7 @@ Label{
 }
 
 .btn-submit:hover {
-    background-color: #383861;
+    background-color: #362b80;
 }
 
 .account-type, .phone-number {
@@ -184,7 +184,7 @@ Label{
     width: fit-content;
     height: 45px;
     padding: 0 5px;
-    background-color: #2F2F4F;
+    background-color: #4738A8;
     color: white;
     border: none;
     border-radius: 5px;

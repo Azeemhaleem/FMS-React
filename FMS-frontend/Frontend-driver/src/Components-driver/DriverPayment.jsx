@@ -65,6 +65,8 @@ export default function DriverPayment() {
       description: x.fine?.description,
       issued_at: x.issued_at,
       expires_at: x.expires_at,
+      can_pay: !!x.can_pay,                      // ✅ ADDED
+      deadline_at: x.deadline_at_iso || x.expires_at, // ✅ ADDED
       paid_at: x.paid_at,
       police_user_id: x.police_user_id,
     })).sort((a,b) => new Date(a.expires_at||a.issued_at) - new Date(b.expires_at||b.issued_at));
@@ -109,6 +111,8 @@ const [payingRows, setPayingRows] = useState(new Set());    // of rowKeys
   const toggleOne = (rowKey) => {
     setSelected(prev => {
       const s = new Set(prev);
+      const row = unpaid.find(u => u.rowKey === rowKey);
+      if (row?.can_pay === false) return s;                  // ✅ block selection
       s.has(rowKey) ? s.delete(rowKey) : s.add(rowKey);
       return s;
     });
@@ -120,45 +124,61 @@ const [payingRows, setPayingRows] = useState(new Set());    // of rowKeys
   );
 
   const toggleAll = () => {
-    setSelected(prev => (prev.size === unpaid.length ? new Set() : new Set(unpaid.map(u => u.rowKey))));
+    const payableKeys = unpaid.filter(u => u.can_pay).map(u => u.rowKey); // ✅ only payable
+    setSelected(prev => (prev.size === payableKeys.length ? new Set() : new Set(payableKeys)));
+
   };
 
   const subtotal = useMemo(() => {
     let sum = 0;
-    unpaid.forEach(u => { if (selected.has(u.rowKey)) sum += Number(u.amount || 0); });
+    unpaid.forEach(u => { if (selected.has(u.rowKey) && u.can_pay) sum += Number(u.amount || 0); });
     return sum;
   }, [selected, unpaid]);
 
   // ---------- Payment actions ----------
 const paySelected = async () => {
   if (selected.size === 0) { alert("Please select at least one fine to pay."); return; }
-  const ids = unpaid.filter(u => selected.has(u.rowKey)).map(u => u.payId);
+    const ids = unpaid.filter(u => selected.has(u.rowKey) && u.can_pay).map(u => u.payId);
+    if (ids.length === 0) {
+      alert("No payable fines in your selection. Some payment windows have closed (court required).");
+      return;
+    }
   await payMany(ids, Array.from(selected));
 };
 
 const payRow = async (rowKey) => {
   const row = unpaid.find(u => u.rowKey === rowKey);
-  if (!row) return;
+  if (!row) return; 
+    if (row.can_pay === false) {
+      alert(`Payment window closed on ${fmtDate(row.deadline_at)}. You must appear in court.`);
+      return;
+      }
   await payMany([row.payId], [rowKey]);
 };
 
-const payMany = async (idsToPay, rowKeysInvolved) => {
-  setPageError("");
-  setPayingRows(prev => new Set([...prev, ...rowKeysInvolved]));
-  try {
-    await api.post(
-      "/process-payment",
-      { fineIds: idsToPay },
-      { headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" } }
-    );
-    setSelected(new Set());
-    await Promise.all([loadUnpaid(), loadPaid()]);
-  } catch {
-    setPageError("Payment failed. No charge was made. Please try again.");
-  } finally {
-    setPayingRows(new Set());
-  }
-};
+// const payMany = async (idsToPay, rowKeysInvolved) => {
+//   setPageError("");
+//   setPayingRows(prev => new Set([...prev, ...rowKeysInvolved]));
+//   try {
+//     await api.post(
+//       "/process-payment",
+//       { fineIds: idsToPay },
+//       { headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" } }
+//     );
+//     setSelected(new Set());
+//     await Promise.all([loadUnpaid(), loadPaid()]);
+//   } catch {
+//     setPageError("Payment failed. No charge was made. Please try again.");
+//   } finally {
+//     setPayingRows(new Set());
+//   }
+// };
+
+  // inside DriverPayment.jsx
+  const payMany = async (idsToPay, rowKeysInvolved) => {
+    navigate("/pay-fines", { state: { fineIds: idsToPay } });
+  };
+
 
 
   // ---------- Render ----------
@@ -225,6 +245,8 @@ const payMany = async (idsToPay, rowKeysInvolved) => {
                 type="checkbox"
                 checked={selected.has(u.rowKey)}
                 onChange={() => toggleOne(u.rowKey)}
+                disabled={u.can_pay === false}                                       // ✅
+                title={u.can_pay ? "" : `Closed on ${fmtDate(u.deadline_at)} — court required`} 
                 aria-label={`Select ${u.name} • ${fmtMoney(u.amount)}`} />
             </td>
             <td>{u.id}</td>
@@ -233,17 +255,19 @@ const payMany = async (idsToPay, rowKeysInvolved) => {
             <td className="text-start small">{fmtDate(u.issued_at)}</td>
             <td className="nowrap small">
               <div className="d-flex flex-column align-items-center gap-1">
-                <span>{fmtDate(u.expires_at)}</span>
+                <span>{fmtDate(u.deadline_at || u.expires_at)}</span> 
                 {badge}
+                {!u.can_pay && <span className="badge bg-dark">Court</span>}
               </div>
             </td>
             <td>
               <button
                 className="btn btn-sm btn-outline-primary"
-                disabled={payingRows.has(u.rowKey)}
+                disabled={payingRows.has(u.rowKey) || u.can_pay === false}
+                title={u.can_pay ? "Pay this fine" : `Closed on ${fmtDate(u.deadline_at)} — court required`}
                 onClick={() => payRow(u.rowKey)}
               >
-                {payingRows.has(u.rowKey) ? "Paying…" : "Pay"}
+                {u.can_pay ? (payingRows.has(u.rowKey) ? "Paying…" : "Pay") : "Closed"}
               </button>
             </td>
           </tr>
@@ -259,14 +283,21 @@ const payMany = async (idsToPay, rowKeysInvolved) => {
       <div className="bg-white rounded-4 shadow-sm p-3 p-sm-4" style={{ background: "linear-gradient(135deg,#d9eaff,#fff)" }}>
         <h6 className="fw-semibold mb-2">Paid List</h6>
         <div className="table-responsive">
-          <table className="table align-middle mb-0">
+          <table className="table align-middle mb-0 table-fixed">
+            <colgroup>
+            <col style={{ width: "5%" }} />    {/* Fine ID */}
+            <col style={{ width: "25%" }} />   {/* Fine */}
+            <col style={{ width: "18%" }} />   {/* Issued */}
+            <col style={{ width: "20%" }} />   {/* Deadline */}
+            <col style={{ width: "10%" }} />   {/* Pay */}
+          </colgroup>
             <thead>
               <tr className="text-secondary text-center">
-                <th className="col-1">Fine ID</th>
-                <th className="col-3 text-start">Fine</th>
-                <th className="col-2 text-end">Amount</th>
-                <th className="col-3 nowrap">Issued</th>
-                <th className="col-3 nowrap">Paid</th>
+                <th className="text-start">Fine ID</th>
+                <th className="text-start">Fine</th>
+                <th className="text-start">Amount</th>
+                <th className="text-start">Issued</th>
+                <th className="text-start nowrap">Paid</th>
               </tr>
             </thead>
             <tbody className="text-center">
@@ -277,11 +308,11 @@ const payMany = async (idsToPay, rowKeysInvolved) => {
               ) : (
                 paid.map((p) => (
                   <tr key={p.id}>
-                    <td>{p.id}</td>
-                    <td className="text-start small">{p.name}</td>
-                    <td className="text-end small">{fmtMoney(p.amount)}</td>
-                    <td className="nowrap small">{fmtDate(p.issued_at)}</td>
-                    <td className="nowrap small">{fmtDate(p.paid_at)}</td>
+                    <td className="text-start">{p.id}</td>
+                    <td className="text-start truncate small">{p.name}</td>
+                    <td className="text-start small">{fmtMoney(p.amount)}</td>
+                    <td className="text-start small">{fmtDate(p.issued_at)}</td>
+                    <td className="text-start nowrap small">{fmtDate(p.paid_at)}</td>
                   </tr>
                 ))
               )}

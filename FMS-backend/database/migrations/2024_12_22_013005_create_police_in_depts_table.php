@@ -16,6 +16,7 @@ return new class extends Migration
             $table->id();
             $table->string('police_id')->unique();
             $table->string('full_name');
+            $table->string('p_station')->nullable();
             $table->softDeletes()->nullable();
             $table->timestamps();
         });

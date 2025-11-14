@@ -1,15 +1,29 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import api from "../api/axios";
+import {
+  Badge,
+  Button,
+  Card,
+  Col,
+  Container,
+  Form,
+  InputGroup,
+  Modal,
+  Row,
+  Spinner,
+  Table,
+  Toast,
+  ToastContainer,
+} from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faSearch } from "@fortawesome/free-solid-svg-icons";
-import api from '../api/axios';
-import { Table, Button, Spinner } from 'react-bootstrap';
+import { faSearch, faEye, faCheck, faTimes } from "@fortawesome/free-solid-svg-icons";
 
+// ---- helpers ---------------------------------------------------------------
 const toStatus = (accepted) => {
-  if (typeof accepted === 'undefined' || accepted === null) return 'Pending';
-  return accepted ? 'Accepted' : 'Declined';
+  if (accepted === undefined || accepted === null) return "Pending";
+  return accepted ? "Approved" : "Rejected";
 };
 
-// Map one server appeal → flat view model for the UI
 const mapAppeal = (a) => {
   const cf = a?.charged_fine ?? {};
   const fine = cf?.fine ?? {};
@@ -17,219 +31,396 @@ const mapAppeal = (a) => {
   const officer = cf?.issuing_police_officer ?? {};
 
   return {
-    id: a?.id,
-    driverName: driver?.name || 'N/A',
-    officerName: officer?.name || 'N/A',
-    offense: fine?.title || fine?.name || 'N/A',
-    reason: a?.reason || a?.description || 'N/A',
+    id: a?.id ?? a?.appeal_id ?? null,
+    askedAt: a?.asked_at ?? null,
+    driverName: driver?.name ?? driver?.username ?? "—",
+    driverLicense: driver?.license_no ?? driver?.license ?? "—",
+    officerName: officer?.name ?? officer?.username ?? "—",
+    offenseCode: fine?.code ?? "—",
+    offense: fine?.title ?? fine?.name ?? "—",
+    reason: a?.reason ?? a?.description ?? "—",
     status: toStatus(a?.accepted),
-    // keep original for modal if you want to show more later
     _raw: a,
   };
 };
 
-// mock fallback data
-const mockAppeals = [
-  {
-    id: 1,
-    driverName: "driver1",
-    officerName: "Officer1",
-    offense: "Speeding",
-    reason: "Emergency situation",
-    status: "Pending",
-  },
-  {
-    id: 2,
-    driverName: "driver2",
-    officerName: "Officer2",
-    offense: "Illegal parking",
-    reason: "Did not see sign",
-    status: "Pending",
-  },
-];
+const clamp2 = { display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" };
 
+// ---- component -------------------------------------------------------------
 const ManageAppeal = () => {
-  const [appeals, setAppeals] = useState([]); // flattened list
+  const [allAppeals, setAllAppeals] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [feedback, setFeedback] = useState({ message: '', variant: '' });
-  const [showModal, setShowModal] = useState(false);
-  const [selectedAppeal, setSelectedAppeal] = useState(null); // flattened item
+  const [error, setError] = useState("");
+  const [q, setQ] = useState("");
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
-  const handleShowMore = (appeal) => {
-    setSelectedAppeal(appeal);
-    setShowModal(true);
-  };
+  // modals & toasts
+  const [detail, setDetail] = useState(null);
+  const [confirm, setConfirm] = useState({ type: null, item: null, busy: false });
+  const [toast, setToast] = useState({ show: false, variant: "success", message: "" });
 
-  const handleCloseModal = () => {
-    setShowModal(false);
-    setSelectedAppeal(null);
-  };
+  const searchDebounce = useRef();
 
-  useEffect(() => {
-    fetchAppeals();
-  }, []);
-
-  useEffect(() => {
-    if (feedback.message) {
-      const timer = setTimeout(() => {
-        setFeedback({ message: '', variant: '' });
-      }, 3000);
-      return () => clearTimeout(timer);
-    }
-  }, [feedback]);
-
-  const fetchAppeals = async () => {
+  // fetch
+  const fetchAppeals = async (signal) => {
     setLoading(true);
+    setError("");
     try {
-      const response = await api.get('h-police/get-all-appeals');
-      const serverAppeals = Array.isArray(response.data?.appeals) ? response.data.appeals : [];
-      const flattened = serverAppeals.map(mapAppeal);
-      setAppeals(mockAppeals);
-    } catch (error) {
-      const errorMessage = error.response?.data?.message || 'Failed to fetch data. Showing mock data.';
-      setFeedback({ message: errorMessage, variant: 'danger' });
-      // fallback to mock data
-      setAppeals(mockAppeals);
+      const res = await api.get("h-police/get-all-appeals", { signal });
+      const items = Array.isArray(res.data?.appeals) ? res.data.appeals : [];
+      const flat = items.map(mapAppeal).sort((a, b) => (a.askedAt > b.askedAt ? -1 : 1));
+      setAllAppeals(flat);
+    } catch (e) {
+      setError(e?.response?.data?.message || "Failed to load appeals.");
+      setAllAppeals([]);
     } finally {
       setLoading(false);
+      setPage(1);
     }
   };
 
-  const handleApprove = async (appealId) => {
-    try {
-      await api.post('h-police/accept-appeal', { appeal_id: appealId });
-      setFeedback({ message: 'Appeal approved.', variant: 'success' });
-      fetchAppeals();
-    } catch (error) {
-      setFeedback({ message: 'Error approving appeal.', variant: 'danger' });
-    }
+  useEffect(() => {
+    const ctrl = new AbortController();
+    fetchAppeals(ctrl.signal);
+    return () => ctrl.abort();
+  }, []);
+
+  // search debounce
+  const onSearchChange = (val) => {
+    setQ(val);
+    if (searchDebounce.current) clearTimeout(searchDebounce.current);
+    searchDebounce.current = setTimeout(() => setPage(1), 300);
   };
 
-  const handleDecline = async (appealId) => {
-    try {
-      await api.post('h-police/decline-appeal', { appeal_id: appealId });
-      setFeedback({ message: 'Appeal declined.', variant: 'warning' });
-      fetchAppeals();
-    } catch (error) {
-      setFeedback({ message: 'Error declining appeal.', variant: 'danger' });
-    }
-  };
-
-  const filteredAppeals = (Array.isArray(appeals) ? appeals : []).filter((a) => {
-    const q = searchTerm.toLowerCase();
-    return (
-        a.driverName.toLowerCase().includes(q) ||
-        a.officerName.toLowerCase().includes(q) ||
-        String(a.id).includes(searchTerm)
+  // derived rows
+  const filtered = useMemo(() => {
+    const s = q.trim().toLowerCase();
+    if (!s) return allAppeals;
+    return allAppeals.filter((a) =>
+      [a.driverName, a.officerName, a.offense, String(a.id || "")]
+        .join(" ")
+        .toLowerCase()
+        .includes(s)
     );
-  });
+  }, [q, allAppeals]);
 
+  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
+  const paged = useMemo(() => {
+    const from = (page - 1) * pageSize;
+    return filtered.slice(from, from + pageSize);
+  }, [filtered, page, pageSize]);
+
+  const removeRow = (id) => setAllAppeals((prev) => prev.filter((x) => x.id !== id));
+
+  const performDecision = async () => {
+    if (!confirm?.item?.id || !confirm.type) return;
+    setConfirm((c) => ({ ...c, busy: true }));
+    const id = confirm.item.id;
+
+    try {
+      if (confirm.type === "approve") {
+        await api.put("h-police/accept-appeal", { appeal_id: id });
+        setToast({ show: true, variant: "success", message: "Appeal approved." });
+      } else {
+        await api.put("h-police/decline-appeal", { appeal_id: id });
+        setToast({ show: true, variant: "warning", message: "Appeal rejected." });
+      }
+      removeRow(id);
+      setConfirm({ type: null, item: null, busy: false });
+    } catch (e) {
+      setToast({
+        show: true,
+        variant: "danger",
+        message:
+          e?.response?.data?.message ||
+          (confirm.type === "approve" ? "Error approving appeal." : "Error rejecting appeal."),
+      });
+      setConfirm((c) => ({ ...c, busy: false }));
+    }
+  };
+
+  // ---- UI ------------------------------------------------------------------
   return (
-      <div className="search-section container" style={{ backgroundColor: "#d3e2fd" }}>
-        <h3 className="fw-bold mb-3 text-center">Pending Appeal Requests</h3>
+    <Container className="py-4" style={{ backgroundColor: "#d3e2fd", minHeight: "100%" }}>
+      {/* Header */}
+      <Row className="align-items-center mb-3">
+        <Col md={8} className="mx-auto d-flex align-items-center">
+          <h3 className="fw-bold mb-0">Appeals</h3>
+          <Badge bg="secondary" className="ms-2 w-50">
+            {allAppeals.length} pending
+          </Badge>
+        </Col>
+      </Row>
 
-        {feedback.message && (
-            <p style={{
-              color:
-                  feedback.variant === 'success'
-                      ? 'green'
-                      : feedback.variant === 'danger'
-                          ? 'red'
-                          : feedback.variant === 'warning'
-                              ? 'orange'
-                              : 'black',
-              fontSize: "small"
-            }}>
-              {feedback.message}
-            </p>
-        )}
-
-        <div className="d-flex justify-content-center mb-3" style={{ width: "100%" }}>
-          <div className="d-flex justify-content-center mb-3" style={{ marginTop: "2%", width: "85%" }}>
-            <input
-                type="text"
-                className="form-control"
-                value={searchTerm}
-                placeholder="Search by Driver, Officer or ID..."
-                style={{ fontSize: "small", width: "100%" }}
-                onChange={(e) => setSearchTerm(e.target.value)}
+      {/* Search */}
+      <Row className="mb-5">
+        <Col md={8} className="mx-auto">
+          <InputGroup>
+            <Form.Control
+              placeholder="Search by Driver, Officer, Offense, or Appeal ID"
+              aria-label="Search"
+              onChange={(e) => onSearchChange(e.target.value)}
             />
-            <button type="button" className="btn btn-info" style={{ width: "5%", color: "white", marginLeft: "3px" }}>
-              <FontAwesomeIcon icon={faSearch} />
-            </button>
-          </div>
-        </div>
+           
+          </InputGroup>
+        </Col>
+      </Row>
 
-        {loading ? (
-            <div className="text-center">
-              <Spinner animation="border" variant="primary" />
-            </div>
-        ) : (
-            <Table striped bordered hover responsive>
-              <thead>
-              <tr>
-                <th>#</th>
-                <th>Driver</th>
-                <th>Officer</th>
-                <th>Offense</th>
-                <th>Appeal Reason</th>
-                <th>Status</th>
-                <th>Approve</th>
-                <th>Decline</th>
-                <th>View</th>
-              </tr>
-              </thead>
-              <tbody>
-              {filteredAppeals.length === 0 ? (
-                  <tr>
-                    <td colSpan="9" className="text-center">No matching appeals found.</td>
-                  </tr>
-              ) : (
-                  filteredAppeals.slice(0, 10).map((a, index) => (
-                      <tr key={a.id}>
-                        <td>{index + 1}</td>
-                        <td>{a.driverName}</td>
-                        <td>{a.officerName}</td>
-                        <td>{a.offense}</td>
-                        <td>{a.reason}</td>
-                        <td>{a.status}</td>
+      {/* Page size + count */}
+      <Row className="mb-2">
+        <Col md={8} className="mx-auto d-flex align-items-center gap-2">
+          <Form.Select
+            value={pageSize}
+            onChange={(e) => {
+              setPageSize(Number(e.target.value));
+              setPage(1);
+            }}
+            style={{ maxWidth: 140 }}
+            aria-label="Rows per page"
+          >
+            <option value={10}>10 rows</option>
+            <option value={25}>25 rows</option>
+            <option value={50}>50 rows</option>
+          </Form.Select>
+          <div className="ms-auto small text-muted">Showing {paged.length} of {filtered.length}</div>
+        </Col>
+      </Row>
+
+      {/* Table / states */}
+      <Row>
+        <Col md={8} className="mx-auto">
+          <Card className="shadow-sm mt-4">
+            {loading ? (
+              <div className="text-center py-5">
+                <Spinner animation="border" role="status" />
+              </div>
+            ) : error ? (
+              <div className="alert alert-danger m-0 d-flex justify-content-between align-items-center">
+                <span>{error}</span>
+                <Button className="w-25" size="sm" variant="outline-light" onClick={() => fetchAppeals()}>
+                  Retry
+                </Button>
+              </div>
+            ) : filtered.length === 0 ? (
+              <div className="text-center text-muted py-5">No appeals found.</div>
+            ) : (
+              <div className="table-responsive p-0">
+                <Table hover className="m-0 align-middle ">
+                  <thead className="table-light">
+                    <tr>
+                      
+                      <th style={{ width: 100 }}>Driver</th>
+                      <th style={{ width: 100 }}>Officer</th>
+                      <th style={{ width: 160 }}>Submitted</th>
+                      <th style={{ width: 110 }}>Status</th>
+                      <th style={{ width: 230 }} className="text-center">
+                        Actions
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {paged.map((a, i) => (
+                      <tr key={a.id ?? `${i}-${a.driverName}`}>
+                        
                         <td>
-                          <Button variant="success" size="sm" onClick={() => handleApprove(a.id)}>Accept</Button>
+                          <div className="text-truncate" style={{ maxWidth: 150 }}>{a.driverName}</div>
                         </td>
                         <td>
-                          <Button variant="danger" size="sm" onClick={() => handleDecline(a.id)}>Decline</Button>
+                          <div className="text-truncate" style={{ maxWidth: 150 }}>{a.officerName}</div>
                         </td>
+                        
+                        
+                        <td>{a.askedAt ? new Date(a.askedAt).toLocaleString() : "—"}</td>
                         <td>
-                          <a href="#" className="text-primary text-decoration-none" onClick={(e) => { e.preventDefault(); handleShowMore(a); }}>
-                            view
-                          </a>
+                          <Badge
+                            bg={a.status === "Pending" ? "secondary" : a.status === "Approved" ? "success" : "danger"}
+                          >
+                            {a.status}
+                          </Badge>
+                        </td>
+                        <td className="text-center">
+                          <div className="d-flex justify-content-center gap-2 flex-wrap">
+                            <Button
+                              size="sm"
+                              variant="outline-primary"
+                              onClick={() => setDetail(a)}
+                              aria-label="View"
+                            >
+                              <FontAwesomeIcon icon={faEye} className="me-1" />
+                              View
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline-success"
+                              onClick={() => setConfirm({ type: "approve", item: a, busy: false })}
+                              aria-label="Approve"
+                            >
+                              <FontAwesomeIcon icon={faCheck} className="me-1" />
+                              Approve
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline-danger"
+                              onClick={() => setConfirm({ type: "reject", item: a, busy: false })}
+                              aria-label="Reject"
+                            >
+                              <FontAwesomeIcon icon={faTimes} className="me-1" />
+                              Reject
+                            </Button>
+                          </div>
                         </td>
                       </tr>
-                  ))
-              )}
-              </tbody>
-            </Table>
-        )}
+                    ))}
+                  </tbody>
+                </Table>
+              </div>
+            )}
+          </Card>
 
-        {showModal && selectedAppeal && (
-            <div className="custom-modal-overlay">
-              <div className="custom-modal-content" style={{ width: "40%" }}>
-                <div className="modal-header">
-                  <h5 className="modal-title">Appeal Details</h5>
-                  <button type="button" className="btn-close" onClick={handleCloseModal}></button>
-                </div>
-                <div className="modal-body" style={{ margin: "3%", marginLeft: "10%" }}>
-                  <input className="form-control mb-2" type="text" value={selectedAppeal.driverName} readOnly />
-                  <input className="form-control mb-2" type="text" value={selectedAppeal.officerName} readOnly />
-                  <input className="form-control mb-2" type="text" value={selectedAppeal.offense} readOnly />
-                  <input className="form-control mb-2" type="text" value={selectedAppeal.reason} readOnly />
-                  <input className="form-control mb-2" type="text" value={selectedAppeal.status} readOnly />
-                </div>
+          {/* Pagination */}
+          {!loading && filtered.length > 0 && (
+            <div className="d-flex justify-content-between align-items-center mt-3">
+              <div className="small text-muted">Page {page} of {totalPages}</div>
+              <div className="btn-group" role="group" aria-label="Pagination">
+                <Button
+                  variant="outline-secondary"
+                  size="sm"
+                  disabled={page <= 1}
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                >
+                  Prev
+                </Button>
+                <Button
+                  variant="outline-secondary"
+                  size="sm"
+                  disabled={page >= totalPages}
+                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                >
+                  Next
+                </Button>
               </div>
             </div>
-        )}
-      </div>
+          )}
+        </Col>
+      </Row>
+
+      {/* Detail modal */}
+      <Modal show={!!detail} onHide={() => setDetail(null)} centered size="lg">
+        <Modal.Header closeButton>
+          <Modal.Title>Appeal Details</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {detail && (
+            <Row className="g-3">
+              <Col md={6}>
+                <Form.Label className="fw-semibold">Driver</Form.Label>
+                <Form.Control value={detail.driverName} readOnly />
+              </Col>
+              <Col md={6}>
+                <Form.Label className="fw-semibold">License</Form.Label>
+                <Form.Control value={detail.driverLicense} readOnly />
+              </Col>
+              <Col md={6}>
+                <Form.Label className="fw-semibold">Officer</Form.Label>
+                <Form.Control value={detail.officerName} readOnly />
+              </Col>
+              <Col md={6}>
+                <Form.Label className="fw-semibold">Offense</Form.Label>
+                <Form.Control
+                  value={`${detail.offenseCode && detail.offenseCode !== "—" ? detail.offenseCode + " – " : ""}${detail.offense}`}
+                  readOnly
+                />
+              </Col>
+              <Col md={6}>
+                <Form.Label className="fw-semibold">Appeal ID</Form.Label>
+                <Form.Control value={detail.id ?? "—"} readOnly />
+              </Col>
+              <Col md={6}>
+                <Form.Label className="fw-semibold">Submitted</Form.Label>
+                <Form.Control value={detail.askedAt ? new Date(detail.askedAt).toLocaleString() : "—"} readOnly />
+              </Col>
+              <Col md={12}>
+                <Form.Label className="fw-semibold">Reason</Form.Label>
+                <Form.Control as="textarea" rows={4} value={detail.reason} readOnly />
+              </Col>
+            </Row>
+          )}
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setDetail(null)}>Close</Button>
+        </Modal.Footer>
+      </Modal>
+
+      {/* Approve/Reject confirm */}
+      <Modal
+        show={!!confirm.type}
+        onHide={() => !confirm.busy && setConfirm({ type: null, item: null, busy: false })}
+        centered
+      >
+        <Modal.Header closeButton={!confirm.busy}>
+          <Modal.Title>{confirm.type === "approve" ? "Approve Appeal" : "Reject Appeal"}</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {confirm.item && (
+            <>
+              <p className="mb-2">
+                Are you sure you want to <strong>{confirm.type === "approve" ? "approve" : "reject"}</strong>{" "}
+                appeal <span className="font-monospace">{confirm.item.id}</span>?
+              </p>
+              <div className="small text-muted">
+                Driver: <strong>{confirm.item.driverName}</strong> • Officer:{" "}
+                <strong>{confirm.item.officerName}</strong>
+              </div>
+            </>
+          )}
+        </Modal.Body>
+        <Modal.Footer>
+          <Button
+            variant="secondary"
+            disabled={confirm.busy}
+            onClick={() => setConfirm({ type: null, item: null, busy: false })}
+          >
+            Cancel
+          </Button>
+          <Button
+            variant={confirm.type === "approve" ? "success" : "danger"}
+            disabled={confirm.busy}
+            onClick={performDecision}
+          >
+            {confirm.busy ? (
+              <>
+                <Spinner size="sm" animation="border" className="me-2" />
+                Processing...
+              </>
+            ) : confirm.type === "approve" ? (
+              <>
+                <FontAwesomeIcon icon={faCheck} className="me-2" />
+                Approve
+              </>
+            ) : (
+              <>
+                <FontAwesomeIcon icon={faTimes} className="me-2" />
+                Reject
+              </>
+            )}
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
+      {/* Toasts */}
+      <ToastContainer position="top-end" className="p-3">
+        <Toast
+          onClose={() => setToast((t) => ({ ...t, show: false }))}
+          show={toast.show}
+          delay={2600}
+          autohide
+          bg={toast.variant}
+        >
+          <Toast.Body className="text-white">{toast.message}</Toast.Body>
+        </Toast>
+      </ToastContainer>
+    </Container>
   );
 };
 

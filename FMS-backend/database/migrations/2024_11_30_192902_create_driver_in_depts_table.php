@@ -19,7 +19,7 @@ return new class extends Migration
             $table->string('full_name');
             $table->string('email')->unique();
             $table->string('licence_id_no')->nullable()->unique();
-            $table->date('issued_expiry_date')->nullable();
+            $table->date('issued_issued_date')->nullable();
             $table->date('license_expiry_date')->nullable();
             $table->softDeletes()->nullable();
             $table->timestamps();

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\hPolice;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use App\Services\PoliceHierarchyService;
 use App\Models\FineAppealRequest;
 use App\Models\ChargedFine;
@@ -94,9 +95,28 @@ class HPoliceAppealHandlingController extends Controller
         try {
             DB::transaction(function () use ($appeal, $chargedFine, $higherOfficer) {
                 $chargedFine->delete();
+                $chargedFine->save();
+
                 $appeal->accepted = true;
                 $appeal->delete();
             });
+
+            // after the transaction block, when things are committed:
+            $driver  = $chargedFine->driverUser;
+            $officer = $chargedFine->issuingPoliceOfficer?->policeUser ?? $chargedFine->issuingPoliceOfficer;
+
+            $driver?->notify(new \App\Notifications\SystemEventNotification(
+                'Your appeal was accepted. The fine has been cancelled.',
+                'appeal.accepted',
+                ['fine_id' => (string)$chargedFine->id]
+            ));
+
+            $officer?->notify(new \App\Notifications\SystemEventNotification(
+                'Appeal accepted: the fine you issued (ID '.$chargedFine->id.') has been cancelled.',
+                'appeal.accepted',
+                ['fine_id' => (string)$chargedFine->id]
+            ));
+
 
             return response()->json(['message' => 'Fine appeal accepted successfully. The fine has been cancelled.'], 200);
 
@@ -145,9 +165,26 @@ class HPoliceAppealHandlingController extends Controller
         try {
             DB::transaction(function () use ($appeal, $chargedFine) {
                 $chargedFine->appeal_requested = false;
+                $chargedFine->save();
+
                 $appeal->accepted = false;
                 $appeal->delete();
             });
+
+            $driver  = $chargedFine->driverUser;
+            $officer = $chargedFine->issuingPoliceOfficer?->policeUser ?? $chargedFine->issuingPoliceOfficer;
+
+            $driver?->notify(new \App\Notifications\SystemEventNotification(
+                'Your appeal was declined. The fine remains active.',
+                'appeal.declined',
+                ['fine_id' => (string)$chargedFine->id]
+            ));
+
+            $officer?->notify(new \App\Notifications\SystemEventNotification(
+                'Appeal declined for fine ID '.$chargedFine->id.'.',
+                'appeal.declined',
+                ['fine_id' => (string)$chargedFine->id]
+            ));
 
             return response()->json(['message' => 'Fine appeal declined successfully. The fine remains active.'], 200);
 

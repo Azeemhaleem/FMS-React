@@ -94,6 +94,12 @@ class ManageTPoliceServiceController extends Controller
         $tPolice->in_service = true;
         $tPolice->service_region = $request->service_region;
         $tPolice->save();
+        $tPolice->policeUser?->notify(new \App\Notifications\SystemEventNotification(
+            'Your account has been activated for service region '.$request->service_region.'.',
+            'officer.activated',
+            ['service_region' => $request->service_region]
+        ));
+
 
         return response()->json([
             'messege' => 'Traffic police ' . $request->police_user_id . ' activated successfully',
@@ -125,6 +131,11 @@ class ManageTPoliceServiceController extends Controller
         $tPolice->in_service = false;
         $tPolice->service_region = null;
         $tPolice->save();
+        $tPolice->policeUser?->notify(new \App\Notifications\SystemEventNotification(
+            'Your account has been deactivated.',
+            'officer.deactivated'
+        ));
+
 
         return response()->json([
             'messege' => 'Traffic police ' . $request->police_user_id . ' deactivated successfully',

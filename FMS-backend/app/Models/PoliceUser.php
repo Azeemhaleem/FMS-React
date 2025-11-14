@@ -106,13 +106,21 @@ class PoliceUser extends Model implements CanResetPasswordContract
         $this->notify(new PoliceResetPasswordNotification($token, $this->getEmailForPasswordReset()));
     }
 
-    public function station() {
-    if ($this->higherPolice) {
-        return $this->higherPolice->station;
+    protected function station(): Attribute
+    {
+        return Attribute::make(
+            get: function () {
+                if ($this->higherPolice) {
+                    return $this->higherPolice->station;
+                }
+                if ($this->trafficPolice) {
+                    return optional(
+                        resolve(\App\Services\PoliceHierarchyService::class)
+                            ->getAssignedHigherOfficer($this)
+                    )->station;
+                }
+                return null;
+            }
+        );
     }
-    if ($this->trafficPolice) {
-        return resolve(PoliceHierarchyService::class)->getAssignedHigherOfficer($this)->station;
-    }
-    return null;
-}
 }

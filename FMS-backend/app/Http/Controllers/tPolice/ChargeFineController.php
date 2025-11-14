@@ -13,7 +13,8 @@ use App\Notifications\NewFineIssuedNotification;
 
 class ChargeFineController extends Controller
 {
-    public function chargeFine(Request $request) {
+    public function chargeFine(Request $request)
+    {
         $request->validate([
             'fine_id' => 'bail|required|exists:fines,id',
             'driver_license_number' => 'bail|required|exists:driver_in_depts,license_no',
@@ -39,21 +40,23 @@ class ChargeFineController extends Controller
         $charged_fine->driverUser->notify(new NewFineIssuedNotification($charged_fine->id));
 
         $charged_fine->load('fine');
-        
+
         return response()->json([
             'messege' => 'Fine charged successfully',
             'charged_fine' => $charged_fine
         ], 200);
     }
 
-    public function getAllFines(Request $request) {
+    public function getAllFines(Request $request)
+    {
         $fines = Fine::all();
         return response()->json([
             'fines' => $fines
         ], 200);
     }
 
-    public function checkLicenseNumber(Request $request) {
+    public function checkLicenseNumber(Request $request)
+    {
         $request->validate([
             'driver_license_number' => 'bail|required|exists:driver_in_depts,license_no',
         ]);
@@ -69,8 +72,10 @@ class ChargeFineController extends Controller
         }
 
         return response()->json([
-            'license_number' => $driver_in_dept->license_no,
+            'license_no' => $driver_in_dept->license_no,
+            'license_id_no' => $driver_in_dept->licence_id_no,
             'full_name' => $driver_in_dept->full_name,
+            'license_issued_date' => $driver_in_dept->issued_issued_date,
             'license_expiry_date' => $driver_in_dept->license_expiry_date,
         ], 200);
     }

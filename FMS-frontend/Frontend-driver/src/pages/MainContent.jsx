@@ -5,6 +5,7 @@ import Slidebar from "../components/Slidebar";
 import Header from "../components/Header";
 // import Quickbar from "../components/Quickbar";
 import "bootstrap/dist/css/bootstrap.min.css";
+import { useLocation } from "react-router-dom";
 
 
 import DriverOverview from "../Components-driver/DriverOverview";
@@ -21,13 +22,26 @@ import DriverMyFines from "../Components-driver/DriverMyFines.jsx";
 // import PoliceProfile from "../components/PoliceProfile.jsx";
 
 
+function useDriverSettingsSection() {
+  const { pathname } = useLocation();
+  const p = pathname.toLowerCase();
 
+  if (!p.includes("/driversettings")) return "";     // index page
+  if (p.endsWith("/account")) return "account";
+  if (p.includes("/security/username")) return "security-username";
+  if (p.includes("/security/password")) return "security-password";
+  if (p.includes("/notifications")) return "notifications";
+  if (p.includes("/help")) return "help";
+  if (p.includes("/danger")) return "danger";
+  return ""; // default
+}
 
 function MainContent({ username,image,role,type }) {
 
 
 
   const [messages, setMessage] = useState([]);
+  const driverSettingsSection = useDriverSettingsSection();
   //   useEffect(() => {
   //     const newMessages = [
   //       { id: 1, text: "Your payment Approved" },
@@ -100,7 +114,7 @@ function MainContent({ username,image,role,type }) {
               {role==="Driver"&&(
               <>
               {type === "Dashboard" && <DriverOverview />}
-              {type === "Settings" && <DriverSettings />}
+              {type === "Settings" && <DriverSettings section={driverSettingsSection} />} 
               {type === "Appeal" && <DriverAppeal />}
               {type === "My Profile" && <DriverProfile />}
               {type === "Messages" && <DriverMessages />}
