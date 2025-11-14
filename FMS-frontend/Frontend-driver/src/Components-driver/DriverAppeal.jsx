@@ -137,7 +137,7 @@ export default function DriverAppeal() {
 
       setAppeals(norm);
       // keep cache in sync so we can still show something if /driver/appeals is down next time
-      try { localStorage.setItem(LS_KEY, JSON.stringify(norm)); } catch {}
+      try { localStorage.setItem(LS_KEY, JSON.stringify(norm)); } catch { }
     } catch {
       // graceful fallback to local cache
       try {
@@ -203,7 +203,7 @@ export default function DriverAppeal() {
 
   const persistAppeals = (items) => {
     setAppeals(items);
-    try { localStorage.setItem(LS_KEY, JSON.stringify(items)); } catch {}
+    try { localStorage.setItem(LS_KEY, JSON.stringify(items)); } catch { }
   };
 
   const onSubmit = async (e) => {
@@ -341,7 +341,7 @@ export default function DriverAppeal() {
                     maxLength={1000}
                     aria-describedby="descHelp descCounter"
                     aria-invalid={touched && (description.trim().length < 20 || description.trim().length > 1000)}
-                    placeholder="Explain why this fine is incorrect. Include date/time, location, plate number, or any details that help us review."
+                    placeholder="Explain why this fine is incorrect. Include date/time, location, plate number, or any details that help us review. Write at least 20 characters"
                   />
                   <div id="descHelp" className="form-text">
                     Be specific. You can attach evidence after submitting, if needed.
@@ -379,7 +379,7 @@ export default function DriverAppeal() {
               </div>
 
               <div className="d-flex flex-wrap gap-2 align-items-center mb-3">
-                {["All", "Pending", "In Review", "Resolved"].map((lab) => (
+                {["All", "Pending", "Resolved"].map((lab) => (
                   <button
                     key={lab}
                     type="button"
@@ -470,7 +470,7 @@ export default function DriverAppeal() {
                                     <dd>{fmtDateTime(item.updated_at)}</dd>
                                   </>
                                 )}
-                                
+
                                 {item.decision && (
                                   <>
                                     <dt>Decision</dt>
