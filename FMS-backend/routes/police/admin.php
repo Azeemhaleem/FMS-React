@@ -8,9 +8,16 @@ use App\Http\Middleware\EnsureAdmin;
 use App\Http\Controllers\Auth\TrafficPoliceRegistrationController;
 use App\Http\Middleware\EnsureEmailVerified;
 use App\Http\Controllers\admin\ReassigningTrafficOfficerController;
+use App\Http\Controllers\Auth\Police\PoliceInfo;
+
+
 
 
 Route::middleware(['auth:sanctum', EnsureAdmin::class, EnsureEmailVerified::class])->group(function () {
+
+    Route::get('/admin/all-police-officers', [PoliceInfo::class, 'getAllOfficers']
+    )->name('admin.all-police-officers');
+    
     Route::post(
         'admin/register-higher-police', [HigherPoliceRegistrationController::class, 'registerNewHigherPolice']
         )->name('admin.register-higher-police');
