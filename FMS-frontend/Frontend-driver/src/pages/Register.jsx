@@ -10,7 +10,6 @@ import {Link} from "react-router-dom";
 import SlideToContinue from "../components/SlideToContinue.jsx";
 import api from "../api/axios";
 import Login_sm_image from "../assets/login-sm-image.png";
-import { useNavigate } from "react-router-dom";
 
 function Register() {
     const [scanResult, setScanResult] = useState(null);
@@ -245,28 +244,19 @@ function Register() {
                                             {/*</div>*/}
                                             
                                         <Form.Group>
+
                                             <div className="d-flex justify-content-center align-items-center qrscan mx-auto"
                                                  style={{ height: "45vh", width: "100%" }}>
-                                                {!scanResult ? (
-                                                    <>
-                                                        <div className="d-flex justify-content-center align-items-center mx-auto" style={{ width: '85%' }}>
-                                                            <QrCodeScanner setScanResult={setScanResult} />
-                                                        </div>
+                                                <div className="d-flex justify-content-center align-items-center mx-auto" style={{width:'85%'}}>
+                                                    <QrCodeScanner setScanResult={setScanResult} />
+                                                </div>
 
-                                                        {formik.touched.DriverQr && formik.errors.DriverQr && (
-                                                            <Form.Control.Feedback type="invalid">
-                                                                {formik.errors.DriverQr}
-                                                            </Form.Control.Feedback>
-                                                        )}
-                                                    </>
-                                                ) : (
-                                                    <div className="d-flex justify-content-center align-items-center" style={{ color: 'green', marginLeft: "25%" }}>
-                                                        <h5>Qr Scanned Successfully!</h5>
-                                                    </div>
+                                                {formik.touched.DriverQr && formik.errors.DriverQr && (
+                                                    <Form.Control.Feedback type="invalid">
+                                                        {formik.errors.DriverQr}
+                                                    </Form.Control.Feedback>
                                                 )}
-
-                                                
-                                                {/* {formik.values.DriverQr ? (
+                                                {formik.values.DriverQr ? (
                                                     <div className="d-flex justify-content-center align-items-center" style={{color: 'green',marginLeft:"25%"}}>
                                                         <h5>Qr Scanned Successfully!</h5>
                                                     </div>
