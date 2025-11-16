@@ -1,7 +1,7 @@
-// src/pages/AdminTrafficPolice.jsx
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../api/axios";
+import './styles-admin.css';
 
 const initialForm = {
   police_id: "",
@@ -22,10 +22,49 @@ export default function AdminTrafficPolice() {
   const [showSuccess, setShowSuccess] = useState(false);
   const [lastRegisteredTrafficId, setLastRegisteredTrafficId] = useState("");
 
+  const [allOfficers, setAllOfficers] = useState([]);
+  const [officerDetails, setOfficerDetails] = useState(null);
+
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchAllOfficers = async () => {
+      try {
+        const res = await api.get("/admin/all-police-officers", {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        });
+
+        setAllOfficers(res.data.data || []);
+      } catch (err) {
+        console.error("Failed to load all officers");
+      }
+    };
+
+    fetchAllOfficers();
+    console.log(allOfficers);
+  }, []);
 
   const setField = (name, value) => {
     setForm((f) => ({ ...f, [name]: value }));
+
+    if (name === "police_id") {
+      const enteredId = value.trim();
+
+      if (!enteredId) {
+        setOfficerDetails(null);
+      } else {
+        const match = allOfficers.find(
+          (officer) => officer.police_id === enteredId
+        );
+        setOfficerDetails(match || null);
+      
+      }
+      
+    }
+    console.log(officerDetails);
+
     if (errors[name]) {
       setErrors((e) => {
         const copy = { ...e };
@@ -50,18 +89,36 @@ export default function AdminTrafficPolice() {
       e.password_confirmation = "Confirm your password.";
     else if (form.password !== form.password_confirmation)
       e.password_confirmation = "Password confirmation does not match.";
+
     return e;
   };
+
+  const getOfficerRole = (officer) => {
+  if (!officer) return "No role assigned";
+
+  if (officer.admin) return "Admin";
+  if (officer.higher_police) return "Higher Police";
+  if (officer.traffic_police) return "Traffic Police";
+
+  return "No role assigned";
+};
 
   const handleSubmit = async (ev) => {
     ev.preventDefault();
     setAlert({ type: "", text: "" });
+
     const e = validate();
     if (Object.keys(e).length) return setErrors(e);
 
     setSubmitting(true);
+
     try {
-      const res = await api.post("/admin/register-traffic-police", form);
+      const res = await api.post("/admin/register-traffic-police", form, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+
       const text =
         res?.data?.message ||
         res?.data?.messege ||
@@ -76,17 +133,20 @@ export default function AdminTrafficPolice() {
       if (err?.response) {
         const data = err.response.data || {};
         const fieldErrors = {};
-        if (data.errors && typeof data.errors === "object") {
+        if (data.errors) {
           Object.entries(data.errors).forEach(([k, v]) => {
             fieldErrors[k] = Array.isArray(v) ? v[0] : String(v);
           });
         }
-        const text =
-          data.message || data.messege || "Failed to register traffic officer.";
         setErrors(fieldErrors);
-        setAlert({ type: "danger", text });
+        setAlert({
+          type: "danger",
+          text:
+            err.response.data.message ||
+            "Failed to register traffic officer.",
+        });
       } else {
-        setAlert({ type: "danger", text: "Network error. Please try again." });
+        setAlert({ type: "danger", text: "Network error. Try again." });
       }
     } finally {
       setSubmitting(false);
@@ -94,21 +154,24 @@ export default function AdminTrafficPolice() {
   };
 
   const inputCls = (name) =>
-    `form-control ${errors[name] ? "is-invalid" : ""}`;
+    `form-control custom-css ${errors[name] ? "is-invalid" : ""}`;
 
   return (
     <div className="container py-5">
       <div className="row justify-content-center">
+
         <div className="col-12 col-sm-10 col-md-8 col-lg-6">
           <div
-            className="card shadow border-0"
+            className="card shadow border-0 "
             style={{ borderRadius: "1rem", backgroundColor: "#f7f9fc" }}
           >
             <div className="card-body p-4 p-sm-5">
-              <h2 className="h3 text-center mb-4">Traffic Officer Registration</h2>
+              <h2 className="h3 text-center mb-4">
+                Traffic Officer Registration
+              </h2>
 
               {alert.text ? (
-                <div className={`alert alert-${alert.type || "info"}`} role="alert">
+                <div className={`alert alert-${alert.type}`} role="alert">
                   {alert.text}
                 </div>
               ) : null}
@@ -123,7 +186,6 @@ export default function AdminTrafficPolice() {
                     value={form.police_id}
                     onChange={(e) => setField(e.target.name, e.target.value)}
                     required
-                    autoComplete="off"
                   />
                   {errors.police_id && (
                     <div className="invalid-feedback">{errors.police_id}</div>
@@ -139,7 +201,6 @@ export default function AdminTrafficPolice() {
                     value={form.username}
                     onChange={(e) => setField(e.target.name, e.target.value)}
                     required
-                    autoComplete="off"
                   />
                   {errors.username && (
                     <div className="invalid-feedback">{errors.username}</div>
@@ -155,7 +216,6 @@ export default function AdminTrafficPolice() {
                     value={form.email}
                     onChange={(e) => setField(e.target.name, e.target.value)}
                     required
-                    autoComplete="off"
                   />
                   {errors.email && (
                     <div className="invalid-feedback">{errors.email}</div>
@@ -171,7 +231,6 @@ export default function AdminTrafficPolice() {
                     value={form.password}
                     onChange={(e) => setField(e.target.name, e.target.value)}
                     required
-                    autoComplete="new-password"
                   />
                   {errors.password ? (
                     <div className="invalid-feedback">{errors.password}</div>
@@ -189,9 +248,10 @@ export default function AdminTrafficPolice() {
                     placeholder="Confirm Password"
                     className={inputCls("password_confirmation")}
                     value={form.password_confirmation}
-                    onChange={(e) => setField(e.target.name, e.target.value)}
+                    onChange={(e) =>
+                      setField(e.target.name, e.target.value)
+                    }
                     required
-                    autoComplete="new-password"
                   />
                   {errors.password_confirmation && (
                     <div className="invalid-feedback">
@@ -205,22 +265,10 @@ export default function AdminTrafficPolice() {
                   className="btn btn-dark w-100"
                   disabled={submitting}
                 >
-                  {submitting ? (
-                    <>
-                      <span
-                        className="spinner-border spinner-border-sm me-2"
-                        role="status"
-                        aria-hidden="true"
-                      />
-                      Registering…
-                    </>
-                  ) : (
-                    "Register"
-                  )}
+                  {submitting ? "Registering…" : "Register"}
                 </button>
               </form>
 
-              {/* success panel with CTA */}
               {showSuccess && (
                 <div
                   className="mt-4 p-3"
@@ -234,17 +282,21 @@ export default function AdminTrafficPolice() {
                   <div className="mb-2">
                     <strong>Traffic Officer registered successfully!</strong>
                   </div>
+
                   <div className="d-flex gap-2">
                     <button
                       className="btn btn-dark btn-sm"
                       onClick={() =>
                         navigate("/AssignTrafficPolice", {
-                          state: { traffic_police_id: lastRegisteredTrafficId },
+                          state: {
+                            traffic_police_id: lastRegisteredTrafficId,
+                          },
                         })
                       }
                     >
-                      Assign Officer to Higher Officer
+                      Assign Officer
                     </button>
+
                     <button
                       className="btn btn-outline-secondary btn-sm"
                       onClick={() => setShowSuccess(false)}
@@ -257,8 +309,31 @@ export default function AdminTrafficPolice() {
             </div>
           </div>
 
-          <div className="mt-4 p-3 rounded" style={{ backgroundColor: "#d3e2fd" }} />
+          <div
+            className="mt-4 p-3 rounded"
+            style={{ backgroundColor: "#d3e2fd" }}
+          />
         </div>
+
+        {officerDetails && (
+          <div className="col-12 col-sm-10 col-md-4 col-lg-4">
+            <div
+              className="card shadow-sm border-0 p-3"
+              style={{
+                borderRadius: "1rem",
+                backgroundColor: "#eef3ff",
+              }}
+            >
+              <h5 className="mb-3">Officer Details</h5>
+
+              <p><strong>ID:</strong> {officerDetails.police_id}</p>
+              <p><strong>Name:</strong> {officerDetails.full_name}</p>
+              <p><strong>Station:</strong> {officerDetails.p_station || null}</p>
+              <p><strong>Assigned Role:</strong> {getOfficerRole(officerDetails)}</p>
+            </div>
+          </div>
+        )}
+
       </div>
     </div>
   );

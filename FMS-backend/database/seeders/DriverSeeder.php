@@ -20,33 +20,35 @@ class DriverSeeder extends Seeder
     {
         DB::table('driver_in_depts')->insert([
             'license_no' => '1111',
-            'full_name' => 'Driver 1',
+            'full_name' => 'Mohamed Azeem',
             'email' => 'driver1@email.com',
             'licence_id_no' => 'BC112555',
         ]);
         DB::table('driver_in_depts')->insert([
             'license_no' => '2222',
-            'full_name' => 'Driver 2',
+            'full_name' => 'Sandali Shela',
             'email' => 'driver2@email.com',
             'licence_id_no' => 'BC112556',
         ]);
         DB::table('driver_in_depts')->insert([
             'license_no' => '3333',
-            'full_name' => 'Driver 3',
+            'full_name' => 'Mohamed Rikaf',
             'email' => 'driver3@email.com',
             'licence_id_no' => 'BC112557',
         ]);
         DB::table('driver_in_depts')->insert([
             'license_no' => '4444',
-            'full_name' => 'Driver 4',
+            'full_name' => 'John Doe',
             'email' => 'driver4@email.com',
             'licence_id_no' => 'BC112558',
         ]);
         DB::table('driver_in_depts')->insert([
             'license_no' => '30005840626XUGYXSKEP',
-            'full_name' => 'Siyas',
-            'email' => 'siyas@email.com',
+            'full_name' => 'Mohamed Azeem',
+            'email' => 'azeemhaleem451@gmail.com',
             'licence_id_no' => 'BC937578',
+            'issued_issued_date' => '17.11.2022',
+            'license_expiry_date' => '17.11.2030'
         ]);
 
         DB::table('driver_users')->insert([
@@ -61,17 +63,17 @@ class DriverSeeder extends Seeder
             'password' => Hash::make('Password1@'),
             'email_verified_at' => now(),
         ]);
-        DB::table('driver_users')->insert([
-            'driver_in_dept_id' => DriverInDept::where('license_no', '3333')->first()->id,
-            'username' => 'driver3',
-            'password' => Hash::make('Password1@'),
-            'email_verified_at' => now(),
-        ]);
-        DB::table('driver_users')->insert([
-            'driver_in_dept_id' => DriverInDept::where('license_no', '4444')->first()->id,
-            'username' => 'driver4',
-            'password' => Hash::make('Password1@'),
-            'email_verified_at' => now(),
-        ]);
+        // DB::table('driver_users')->insert([
+        //     'driver_in_dept_id' => DriverInDept::where('license_no', '3333')->first()->id,
+        //     'username' => 'driver3',
+        //     'password' => Hash::make('Password1@'),
+        //     'email_verified_at' => now(),
+        // ]);
+        // DB::table('driver_users')->insert([
+        //     'driver_in_dept_id' => DriverInDept::where('license_no', '4444')->first()->id,
+        //     'username' => 'driver4',
+        //     'password' => Hash::make('Password1@'),
+        //     'email_verified_at' => now(),
+        // ]);
     }
 }

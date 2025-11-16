@@ -34,3 +34,7 @@
 }
 
 .action-card h5 { font-weight: 600; }
+
+.custom-css{
+  width: 100% !important;
+}
