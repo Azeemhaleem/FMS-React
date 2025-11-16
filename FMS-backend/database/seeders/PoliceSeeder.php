@@ -25,52 +25,67 @@ class PoliceSeeder extends Seeder
     public function run(): void
     {
         DB::table('police_in_depts')->insert([
-            'police_id' => '1111',
-            'full_name' => 'Police 1',
-            'p_station' => 'Colombo',
-        ]);
-        DB::table('police_in_depts')->insert([
-            'police_id' => '2222',
-            'full_name' => 'Police 2',
+            'police_id' => 'BC11111',
+            'full_name' => 'Mohamed Azeem',
             'p_station' => 'Kandy',
         ]);
         DB::table('police_in_depts')->insert([
-            'police_id' => '3333',
-            'full_name' => 'Police 3',
+            'police_id' => 'BC11112',
+            'full_name' => 'Sandali shela',
+            'p_station' => 'Matara',
+        ]);
+        DB::table('police_in_depts')->insert([
+            'police_id' => 'BC11113',
+            'full_name' => 'Rikaf Fasri',
+            'p_station' => 'Dehiwala',
+        ]);
+        DB::table('police_in_depts')->insert([
+            'police_id' => 'BC11114',
+            'full_name' => 'John doe',
             'p_station' => 'Colombo',
         ]);
         DB::table('police_in_depts')->insert([
-            'police_id' => '4444',
-            'full_name' => 'Police 4',
+            'police_id' => 'BC11115',
+            'full_name' => 'Saman Kumara',
             'p_station' => 'Kandy',
         ]);
         DB::table('police_in_depts')->insert([
-            'police_id' => '5555',
+            'police_id' => 'BC11116',
+            'full_name' => 'Roshan Watawala',
+            'p_station' => 'Colombo',
+        ]);
+        DB::table('police_in_depts')->insert([
+            'police_id' => 'BC11117',
+            'full_name' => 'Saman Perera',
+            'p_station' => 'Kandy',
+        ]);
+        DB::table('police_in_depts')->insert([
+            'police_id' => 'BC11118',
             'full_name' => 'Police 5',
             'p_station' => 'Colombo',
         ]);
         DB::table('police_in_depts')->insert([
-            'police_id' => '6666',
+            'police_id' => 'BC11119',
             'full_name' => 'Police 6',
             'p_station' => 'Colombo',
         ]);
         DB::table('police_in_depts')->insert([
-            'police_id' => '7777',
+            'police_id' => 'BC11121',
             'full_name' => 'Police 7',
             'p_station' => 'Colombo',
         ]);
         DB::table('police_in_depts')->insert([
-            'police_id' => '8888',
+            'police_id' => 'BC11122',
             'full_name' => 'Police 8',
             'p_station' => 'Colombo',
         ]);
         DB::table('police_in_depts')->insert([
-            'police_id' => '9999',
+            'police_id' => 'BC11123',
             'full_name' => 'Police 9',
             'p_station' => 'Colombo',
         ]);
         DB::table('police_in_depts')->insert([
-            'police_id' => '1010',
+            'police_id' => 'BC11124',
             'full_name' => 'Police 10',
             'p_station' => 'Colombo',
         ]);
@@ -209,6 +224,18 @@ class PoliceSeeder extends Seeder
         DB::table('higher_traffic_police')->insert([
             'higher_police_id' => '6666',
             'traffic_police_id' => '7777',
+        ]);
+        DB::table('higher_traffic_police')->insert([
+            'higher_police_id' => '6666',
+            'traffic_police_id' => '1234',
+        ]);
+        DB::table('higher_traffic_police')->insert([
+            'higher_police_id' => '6666',
+            'traffic_police_id' => '1235',
+        ]);
+        DB::table('higher_traffic_police')->insert([
+            'higher_police_id' => '6666',
+            'traffic_police_id' => '1236',
         ]);
         AccountCreationLog::create([
             'created_by' => PoliceUser::where('username', 'admin2')->first()->id,
