@@ -1,5 +1,5 @@
 // src/pages/AdminHigherPolice.jsx
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import api from "../api/axios";
 
 const initialForm = {
@@ -19,16 +19,17 @@ export default function AdminHigherPolice() {
   const [alert, setAlert] = useState({ type: "", text: "" });
   const [submitting, setSubmitting] = useState(false);
 
-  const setField = (name, value) => {
-    setForm((f) => ({ ...f, [name]: value }));
-    // clear field-level error on change
-    if (errors[name]) {
-      setErrors((e) => {
-        const copy = { ...e };
-        delete copy[name];
-        return copy;
-      });
-    }
+  const [allOfficers, setAllOfficers] = useState([]);
+  const [officerDetails, setOfficerDetails] = useState(null);
+
+  const getOfficerRole = (o) => {
+    if (!o) return "No role";
+
+    if (o.admin) return "Admin";
+    if (o.higher_police) return "Higher Police";
+    if (o.traffic_police) return "Traffic Police";
+
+    return "No role assigned";
   };
 
   const validate = () => {
@@ -41,13 +42,55 @@ export default function AdminHigherPolice() {
     if (!form.password) e.password = "Password is required.";
     else if (!PASSWORD_RULE.test(form.password))
       e.password =
-        "At least 8 chars, with uppercase, lowercase, number, and symbol.";
+        "At least 8 chars, including uppercase, lowercase, number, and symbol.";
     if (!form.password_confirmation)
       e.password_confirmation = "Confirm your password.";
     else if (form.password !== form.password_confirmation)
       e.password_confirmation = "Password confirmation does not match.";
     return e;
+  };
+
+  useEffect(() => {
+    const fetchAllOfficers = async () => {
+      try {
+        const res = await api.get("/admin/all-police-officers", {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        });
+        setAllOfficers(res.data.data || []);
+      } catch (err) {
+        console.error("Failed to load all officers");
+      }
     };
+
+    fetchAllOfficers();
+  }, []);
+
+  const setField = (name, value) => {
+    setForm((f) => ({ ...f, [name]: value }));
+
+    if (name === "police_id") {
+      const enteredId = value.trim();
+
+      if (!enteredId) {
+        setOfficerDetails(null);
+      } else {
+        const match = allOfficers.find(
+          (officer) => officer.police_id === enteredId
+        );
+        setOfficerDetails(match || null);
+      }
+    }
+
+    if (errors[name]) {
+      setErrors((e) => {
+        const copy = { ...e };
+        delete copy[name];
+        return copy;
+      });
+    }
+  };
 
   const handleSubmit = async (ev) => {
     ev.preventDefault();
@@ -62,7 +105,6 @@ export default function AdminHigherPolice() {
     try {
       const res = await api.post("/admin/register-higher-police", form);
 
-      // Laravel sometimes returns `message` or misspelled `messege`
       const text =
         res?.data?.message ||
         res?.data?.messege ||
@@ -70,14 +112,12 @@ export default function AdminHigherPolice() {
 
       setAlert({ type: "success", text });
       setErrors({});
-      setForm(initialForm); // reset form on success
+      setForm(initialForm);
     } catch (err) {
-      // Normalize Laravel validation errors and generic errors
       if (err?.response) {
         const data = err.response.data || {};
         const fieldErrors = {};
 
-        // data.errors is usually { field: [msg1, msg2] }
         if (data.errors && typeof data.errors === "object") {
           Object.entries(data.errors).forEach(([k, v]) => {
             if (Array.isArray(v)) fieldErrors[k] = v[0];
@@ -85,7 +125,6 @@ export default function AdminHigherPolice() {
           });
         }
 
-        // top banner message
         const text =
           data.message || data.messege || "Failed to register higher officer.";
 
@@ -115,9 +154,7 @@ export default function AdminHigherPolice() {
 
               {alert.text ? (
                 <div
-                  className={`alert alert-${
-                    alert.type || "info"
-                  } d-flex align-items-center`}
+                  className={`alert alert-${alert.type || "info"} d-flex align-items-center`}
                   role="alert"
                 >
                   <div>{alert.text}</div>
@@ -233,12 +270,30 @@ export default function AdminHigherPolice() {
             </div>
           </div>
 
-          {/* Light background like your screenshot */}
           <div
             className="mt-4 p-3 rounded"
             style={{ backgroundColor: "#d3e2fd" }}
           />
         </div>
+
+        {officerDetails && (
+          <div className="col-12 col-sm-10 col-md-4 col-lg-4">
+            <div
+              className="card shadow-sm border-0 p-3"
+              style={{
+                borderRadius: "1rem",
+                backgroundColor: "#eef3ff",
+              }}
+            >
+              <h5 className="mb-3">Officer Details</h5>
+
+              <p><strong>ID:</strong> {officerDetails.police_id}</p>
+              <p><strong>Name:</strong> {officerDetails.full_name}</p>
+              <p><strong>Station:</strong> {officerDetails.p_station || null}</p>
+              <p><strong>Assigned Role:</strong> {getOfficerRole(officerDetails)}</p>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

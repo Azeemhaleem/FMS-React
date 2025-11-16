@@ -328,7 +328,7 @@ export default function AdminTrafficPolice() {
 
               <p><strong>ID:</strong> {officerDetails.police_id}</p>
               <p><strong>Name:</strong> {officerDetails.full_name}</p>
-              <p><strong>Station:</strong> {officerDetails.p_station}</p>
+              <p><strong>Station:</strong> {officerDetails.p_station || null}</p>
               <p><strong>Assigned Role:</strong> {getOfficerRole(officerDetails)}</p>
             </div>
           </div>
