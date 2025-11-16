@@ -4,6 +4,7 @@ namespace App\Http\Controllers\PoliceGen;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache; 
 
 class PoliceNotificationController extends Controller
 {
@@ -38,6 +39,16 @@ class PoliceNotificationController extends Controller
         $notifications = $police->unreadNotifications()->get();
         return response()->json($notifications);
     }
+    public function unreadCount(Request $request)
+    {
+        $police = $request->user();
+
+        $count = Cache::remember("police:unread_count:{$police->id}", 10, function () use ($police) {
+            return $police->unreadNotifications()->count();
+        });
+
+        return response()->json(['count' => $count], 200);
+    }
 
     public function markAsRead(Request $request) {
         $validated = $request->validate([
@@ -46,6 +57,7 @@ class PoliceNotificationController extends Controller
         $police = $request->user();
         $notification = $police->notifications()->where('id', $request->notification_id)->firstOrFail();
         $notification->markAsRead();
+        Cache::forget("police:unread_count:{$police->id}");
         return response()->json([
             'message' => 'Notification id : ' . $notification->id . ' marked as read'
         ], 200);
@@ -66,6 +78,7 @@ class PoliceNotificationController extends Controller
         $police = $request->user();
         $notification = $police->notifications()->where('id', $request->notification_id)->firstOrFail();
         $notification->delete();
+        Cache::forget("police:unread_count:{$police->id}");
         return response()->json([
             'message' => 'Notification id : ' . $notification->id . ' deleted'
         ], 200);
@@ -74,6 +87,7 @@ class PoliceNotificationController extends Controller
     public function deleteAllNotifications(Request $request) {
         $police = $request->user();
         $police->notifications()->delete();
+        Cache::forget("police:unread_count:{$police->id}");
         return response()->json([
             'message' => 'All notifications deleted'
         ], 200);

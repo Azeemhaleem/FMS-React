@@ -85,29 +85,61 @@ class FineAppealController extends Controller
         ], 201);
     }
 
-    public function myAppeals(Request $request)
-    {
-        $driver = $request->user();
+public function myAppeals(Request $request)
+{
+    $driver = $request->user();
+    $status = strtolower($request->query('status', 'all'));
 
-        $rows = FineAppealRequest::with(['chargedFine.fine'])
-            ->whereHas('chargedFine', fn($q) => $q->where('driver_user_id', $driver->id))
-            ->latest('asked_at')
-            ->get();
+    $query = FineAppealRequest::query()
+        ->withTrashed() // include resolved appeals
+        ->whereHas('chargedFine', function ($q) use ($driver) {
+            // 👈 include soft-deleted charged fines in the whereHas too
+            $q->withTrashed()->where('driver_user_id', $driver->id);
+        })
+        ->with([
+            'chargedFine' => function ($q) {
+                $q->withTrashed()->with(['fine']);
+            }
+        ])
+        ->orderByDesc('asked_at');
 
-        $payload = $rows->map(function ($r) {
-            return [
-                'id'          => (string) $r->id,
-                'fine_id'     => (string) $r->fine_id,
-                'date'        => optional($r->asked_at)->toIso8601String(),
-                'status'      => 'Pending',
-                'reason'      => $r->reason,
-                'decision'    => null,
-                'letter_url'  => null,
-                'fine_name'   => optional(optional($r->chargedFine)->fine)->name,
-                'fine_amount' => optional(optional($r->chargedFine)->fine)->amount,
-            ];
-        });
-
-        return response()->json($payload);
+    if ($status === 'open') {
+        $query->whereNull('deleted_at');
+    } elseif ($status === 'resolved') {
+        $query->onlyTrashed();
     }
+
+    $rows = $query->get();
+
+    $payload = $rows->map(function ($r) {
+        $isResolved = !is_null($r->deleted_at);
+        $status     = $isResolved ? 'Resolved' : 'Pending';
+
+        $decision = null;
+        if ($isResolved) {
+            if ($r->accepted === true)  $decision = 'Accepted';
+            if ($r->accepted === false) $decision = 'Declined';
+        }
+
+        $cf   = $r->chargedFine;
+        $fine = $cf?->fine;
+
+        return [
+            'id'           => (string) $r->id,
+            'fine_id'      => (string) $r->fine_id,
+            'date'         => optional($r->asked_at)->toIso8601String(),
+            'status'       => $status,
+            'reason'       => $r->reason,
+            'decision'     => $decision,
+            'letter_url'   => null,
+            'updated_at'   => optional($r->updated_at)->toIso8601String(),
+            'resolved_at'  => optional($r->deleted_at)->toIso8601String(),
+            'fine_name'    => $fine?->name,
+            'fine_amount'  => $fine?->amount,
+        ];
+    });
+
+    return response()->json($payload, 200);
+}
+
 }

@@ -1,4 +1,5 @@
-import React, { useEffect, useMemo, useState } from "react";
+// src/components/Slidebar.jsx
+import React, { useEffect, useRef, useMemo, useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -40,45 +41,66 @@ function Slidebar({ role = "Officer" }) {
   );
 
   const [unreadCount, setUnreadCount] = useState(0);
+  const controllerRef = useRef(null);
+  const intervalRef = useRef(null);
 
-  // ---- Unread notifications polling (safe fallback) ----
+  // ---- Optimized unread count polling ----
   useEffect(() => {
     if (!token) return;
 
     let cancelled = false;
 
-    const loadUnread = async () => {
+    const loadUnreadCount = async () => {
+      if (document.visibilityState === "hidden") return;
+
+      // cancel any in-flight request
+      if (controllerRef.current) controllerRef.current.abort();
+      controllerRef.current = new AbortController();
+
       try {
-        // Preferred police endpoint (parallel to your driver version)
-        const r = await api.get("/police/notifications/unread", auth);
+        // ✅ use lightweight unread-count endpoint instead of full /unread
+        const r = await api.get("/police/notifications/unread-count", {
+          ...auth,
+          signal: controllerRef.current.signal,
+        });
+
         if (!cancelled) {
-          const count = Array.isArray(r?.data) ? r.data.length : (r?.data?.count ?? 0);
-          setUnreadCount(Number(count) || 0);
+          const next = Number(r?.data?.count ?? 0);
+          setUnreadCount((prev) => (prev !== next ? next : prev));
         }
-      } catch {
-        // Fallback: try fetching all and counting unread locally
-        try {
-          const r2 = await api.get("/police/notifications/all", auth);
-          if (!cancelled) {
-            const raw = Array.isArray(r2?.data) ? r2.data : [];
-            const count = raw.reduce((acc, n) => acc + (n.read_at ? 0 : 1), 0);
-            setUnreadCount(Number(count) || 0);
-          }
-        } catch {
-          if (!cancelled) setUnreadCount(0);
+      } catch (e) {
+        if (!cancelled && e.code !== "ERR_CANCELED") {
+          setUnreadCount(0);
         }
       }
     };
 
-    loadUnread();
-    const id = setInterval(loadUnread, 30000);
+    // initial fetch
+    loadUnreadCount();
+
+    // polling every 30s
+    if (!intervalRef.current) {
+      intervalRef.current = setInterval(loadUnreadCount, 30000);
+    }
+
+    // refetch when user returns to tab
+    const onVis = () => {
+      if (document.visibilityState === "visible") loadUnreadCount();
+    };
+    document.addEventListener("visibilitychange", onVis);
+
     return () => {
       cancelled = true;
-      clearInterval(id);
+      document.removeEventListener("visibilitychange", onVis);
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+      if (controllerRef.current) controllerRef.current.abort();
     };
   }, [token, auth]);
 
-  // ---- Menus (kept 1:1 with your original to avoid missing options) ----
+  // ---- Menu structure (unchanged) ----
   const sidebarOptions = {
     Driver: [
       { icon: faTableColumns, text: "Overview", link: "/DriverOverview" },
@@ -133,8 +155,7 @@ function Slidebar({ role = "Officer" }) {
           <NavLink
             to={item.link}
             className={({ isActive }) =>
-              `d-flex align-items-center px-3 py-2 rounded-3 text-decoration-none sidebar-link ${
-                isActive ? "sidebar-link--active" : ""
+              `d-flex align-items-center px-3 py-2 rounded-3 text-decoration-none sidebar-link ${isActive ? "sidebar-link--active" : ""
               }`
             }
           >
@@ -148,6 +169,7 @@ function Slidebar({ role = "Officer" }) {
                 <span className={isActive ? "fw-semibold text-primary" : "text-dark"}>
                   {item.text}
                 </span>
+
                 {/* Tiny dot for unread notifications */}
                 {item.text.toLowerCase().includes("notifications") && unreadCount > 0 && (
                   <span
@@ -159,7 +181,7 @@ function Slidebar({ role = "Officer" }) {
                       width: 10,
                       height: 8,
                       borderRadius: "50%",
-                      background: "#ff1fa5ff", // change to '#fd0da5ff' if you want the driver pink
+                      background: "#fd0da5ff", // same pink as driver
                     }}
                   />
                 )}

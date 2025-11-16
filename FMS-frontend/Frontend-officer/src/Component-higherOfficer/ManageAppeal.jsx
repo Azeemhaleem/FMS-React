@@ -23,6 +23,22 @@ const toStatus = (accepted) => {
   if (accepted === undefined || accepted === null) return "Pending";
   return accepted ? "Approved" : "Rejected";
 };
+// Hide "—" or empty values
+const hasValue = (v) =>
+  v !== undefined && v !== null && String(v).trim() !== "" && String(v).trim() !== "—";
+
+// Vertical field (label above value) – better in narrow columns
+const VField = ({ label, value }) => {
+  if (!hasValue(value)) return null;
+  return (
+    <div className="vfield mb-3">
+      <div className="vfield-label">{label}</div>
+      <div className="vfield-value">{value}</div>
+    </div>
+  );
+};
+
+
 
 const mapAppeal = (a) => {
   const cf = a?.charged_fine ?? {};
@@ -162,7 +178,7 @@ const ManageAppeal = () => {
               aria-label="Search"
               onChange={(e) => onSearchChange(e.target.value)}
             />
-           
+
           </InputGroup>
         </Col>
       </Row>
@@ -209,7 +225,7 @@ const ManageAppeal = () => {
                 <Table hover className="m-0 align-middle ">
                   <thead className="table-light">
                     <tr>
-                      
+
                       <th style={{ width: 100 }}>Driver</th>
                       <th style={{ width: 100 }}>Officer</th>
                       <th style={{ width: 160 }}>Submitted</th>
@@ -222,15 +238,15 @@ const ManageAppeal = () => {
                   <tbody>
                     {paged.map((a, i) => (
                       <tr key={a.id ?? `${i}-${a.driverName}`}>
-                        
+
                         <td>
                           <div className="text-truncate" style={{ maxWidth: 150 }}>{a.driverName}</div>
                         </td>
                         <td>
                           <div className="text-truncate" style={{ maxWidth: 150 }}>{a.officerName}</div>
                         </td>
-                        
-                        
+
+
                         <td>{a.askedAt ? new Date(a.askedAt).toLocaleString() : "—"}</td>
                         <td>
                           <Badge
@@ -306,51 +322,71 @@ const ManageAppeal = () => {
       </Row>
 
       {/* Detail modal */}
-      <Modal show={!!detail} onHide={() => setDetail(null)} centered size="lg">
+      <Modal
+        show={!!detail}
+        onHide={() => setDetail(null)}
+        centered
+        scrollable
+        dialogClassName="appeal-modal-xl"
+      >
         <Modal.Header closeButton>
           <Modal.Title>Appeal Details</Modal.Title>
         </Modal.Header>
+
         <Modal.Body>
           {detail && (
-            <Row className="g-3">
-              <Col md={6}>
-                <Form.Label className="fw-semibold">Driver</Form.Label>
-                <Form.Control value={detail.driverName} readOnly />
-              </Col>
-              <Col md={6}>
-                <Form.Label className="fw-semibold">License</Form.Label>
-                <Form.Control value={detail.driverLicense} readOnly />
-              </Col>
-              <Col md={6}>
-                <Form.Label className="fw-semibold">Officer</Form.Label>
-                <Form.Control value={detail.officerName} readOnly />
-              </Col>
-              <Col md={6}>
-                <Form.Label className="fw-semibold">Offense</Form.Label>
-                <Form.Control
-                  value={`${detail.offenseCode && detail.offenseCode !== "—" ? detail.offenseCode + " – " : ""}${detail.offense}`}
-                  readOnly
-                />
-              </Col>
-              <Col md={6}>
-                <Form.Label className="fw-semibold">Appeal ID</Form.Label>
-                <Form.Control value={detail.id ?? "—"} readOnly />
-              </Col>
-              <Col md={6}>
-                <Form.Label className="fw-semibold">Submitted</Form.Label>
-                <Form.Control value={detail.askedAt ? new Date(detail.askedAt).toLocaleString() : "—"} readOnly />
-              </Col>
-              <Col md={12}>
-                <Form.Label className="fw-semibold">Reason</Form.Label>
-                <Form.Control as="textarea" rows={4} value={detail.reason} readOnly />
-              </Col>
-            </Row>
+            <>
+              <Row className="g-4">
+                <Col md={6}>
+                  <VField label="Driver" value={detail.driverName} />
+                </Col>
+                <Col md={6}>
+                  <VField label="License" value={detail.driverLicense} />
+                </Col>
+
+                <Col md={6}>
+                  <VField label="Officer" value={detail.officerName} />
+                </Col>
+                <Col md={6}>
+                  <VField
+                    label="Offense"
+                    value={
+                      hasValue(detail.offenseCode)
+                        ? `${detail.offenseCode} – ${detail.offense}`
+                        : detail.offense
+                    }
+                  />
+                </Col>
+
+                <Col md={6}>
+                  <VField label="Appeal ID" value={detail.id} />
+                </Col>
+                <Col md={6}>
+                  <VField
+                    label="Submitted"
+                    value={detail.askedAt ? new Date(detail.askedAt).toLocaleString() : null}
+                  />
+                </Col>
+
+                <Col xs={12}>
+                  <div className="vfield">
+                    <div className="vfield-label">Reason</div>
+                    <div className="vfield-value vfield-reason">
+                      {hasValue(detail.reason) ? detail.reason : "—"}
+                    </div>
+                  </div>
+                </Col>
+              </Row>
+            </>
           )}
         </Modal.Body>
+
         <Modal.Footer>
           <Button variant="secondary" onClick={() => setDetail(null)}>Close</Button>
         </Modal.Footer>
       </Modal>
+
+
 
       {/* Approve/Reject confirm */}
       <Modal

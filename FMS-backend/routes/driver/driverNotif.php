@@ -27,6 +27,8 @@ Route::middleware(['auth:sanctum', EnsureDriver::class, EnsureEmailVerified::cla
         Route::get(
             'unread', [DriverNotificationController::class, 'getUnreadNotifications']
             )->name('.unread');
+        Route::get('unread-count', [DriverNotificationController::class, 'unreadCount']
+            )->name('.unread-count');
         Route::put(
             'mark-as-read', [DriverNotificationController::class, 'markAsRead'] 
             )->name('.mark-as-read');

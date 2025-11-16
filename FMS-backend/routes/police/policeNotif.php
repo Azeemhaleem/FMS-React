@@ -26,6 +26,8 @@ Route::middleware(['auth:sanctum', EnsurePolice::class, EnsureEmailVerified::cla
         Route::get(
             'unread', [PoliceNotificationController::class, 'getUnreadNotifications']
             )->name('.unread');
+        Route::get('unread-count', [PoliceNotificationController::class, 'unreadCount']
+            )->name('.unread-count');
         Route::put(
             'mark-as-read', [PoliceNotificationController::class, 'markAsRead'] 
             )->name('.mark-as-read');
