@@ -59,7 +59,7 @@ function Header({ username, role }) {
           setProfileImage(bust);
           try {
             localStorage.setItem("police_profile_img", bust);
-          } catch {}
+          } catch { }
         }
       } catch (err) {
         // fall back silently; default image already shown
@@ -74,7 +74,7 @@ function Header({ username, role }) {
       const next = e?.detail?.url;
       if (next) {
         setProfileImage(next);               // instant swap, no refetch
-        try { localStorage.setItem("police_profile_img", next); } catch {}
+        try { localStorage.setItem("police_profile_img", next); } catch { }
       }
     };
     window.addEventListener("profile-image-updated", onUpdated);
@@ -89,11 +89,11 @@ function Header({ username, role }) {
           <Link
             to={
               role === "Admin" ? "/AdminOverview"
-              : role === "SuperAdmin" ? "/SuperAdminOverview"
-              : role === "HigherOfficer" ? "/HigherOfficerProfile"
-              : role === "Officer" ? "/OfficerOverview"
-              : role === "Driver" ? "/DriverOverview"
-              : "/"
+                : role === "SuperAdmin" ? "/SuperAdminOverview"
+                  : role === "HigherOfficer" ? "/HigherOfficerProfile"
+                    : role === "Officer" ? "/OfficerOverview"
+                      : role === "Driver" ? "/DriverOverview"
+                        : "/"
             }
             style={{ textDecoration: "none", color: "black" }}
           >
@@ -105,7 +105,7 @@ function Header({ username, role }) {
           <div className="navbarlinks mt-2" style={{ marginLeft: "5%" }}>
             <p className="navbarlink fs-5 mt-2">
               <Link to="/home" id="navlinks">
-                              <b>Home</b>
+                <b>Home</b>
               </Link>
             </p>
 
@@ -122,14 +122,14 @@ function Header({ username, role }) {
                   window.location.href = "/loginPolice";
                 }}
               >
-                
+
                 <b>Logout</b>
               </a>
             </p>
 
             <p className="navbarlink text-secondary d-flex pe-1 me-1">
               <span className="name d-block pe-2 mt-1">
-                Hey, <b style={{ color: "black" }}>{username}</b>
+                Hey,
                 <br />
                 {role}
               </span>
@@ -137,11 +137,11 @@ function Header({ username, role }) {
               <Link
                 to={
                   role === "Admin" ? "/AdminProfile"
-                  : role === "SuperAdmin" ? "/SuperAdminProfile"
-                  : role === "HigherOfficer" ? "/HigherOfficerProfile"
-                  : role === "Officer" ? "/OfficerProfile"
-                  : role === "Driver" ? "/DriverProfile"
-                  : "/"
+                    : role === "SuperAdmin" ? "/SuperAdminProfile"
+                      : role === "HigherOfficer" ? "/HigherOfficerProfile"
+                        : role === "Officer" ? "/OfficerProfile"
+                          : role === "Driver" ? "/DriverProfile"
+                            : "/"
                 }
                 className="profile-img-link"
               >
@@ -155,17 +155,17 @@ function Header({ username, role }) {
                     flexShrink: 0,
                   }}
                 >
-                <img
-                  src={profileImage}
-                  onError={(e) => { e.currentTarget.src = default_image; }}
-                  alt="profile"
-                  style={{
-                    width: "100%",
-                    height: "100%",
-                    objectFit: "cover",
-                    display: "block",
-                  }}
-                />
+                  <img
+                    src={profileImage}
+                    onError={(e) => { e.currentTarget.src = default_image; }}
+                    alt="profile"
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "cover",
+                      display: "block",
+                    }}
+                  />
                 </div>
               </Link>
             </p>

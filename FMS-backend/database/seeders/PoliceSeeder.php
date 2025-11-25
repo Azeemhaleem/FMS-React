@@ -2,9 +2,9 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 
 use App\Models\Roles;
 use App\Models\PoliceInDept;
@@ -13,9 +13,6 @@ use App\Models\HigherPolice;
 use App\Models\TrafficPolice;
 use App\Models\Admin;
 use App\Models\AccountCreationLog;
-use App\Models\HigherPoliceTrafficPolice;
-
-use Illuminate\Support\Facades\Hash;
 
 class PoliceSeeder extends Seeder
 {
@@ -24,262 +21,105 @@ class PoliceSeeder extends Seeder
      */
     public function run(): void
     {
-        DB::table('police_in_depts')->insert([
-            'police_id' => 'BC11111',
-            'full_name' => 'Mohamed Azeem',
-            'p_station' => 'Kandy',
-        ]);
-        DB::table('police_in_depts')->insert([
-            'police_id' => 'BC11112',
-            'full_name' => 'Sandali shela',
-            'p_station' => 'Matara',
-        ]);
-        DB::table('police_in_depts')->insert([
-            'police_id' => 'BC11113',
-            'full_name' => 'Rikaf Fasri',
-            'p_station' => 'Dehiwala',
-        ]);
-        DB::table('police_in_depts')->insert([
-            'police_id' => 'BC11114',
-            'full_name' => 'John doe',
-            'p_station' => 'Colombo',
-        ]);
-        DB::table('police_in_depts')->insert([
-            'police_id' => 'BC11115',
-            'full_name' => 'Saman Kumara',
-            'p_station' => 'Kandy',
-        ]);
-        DB::table('police_in_depts')->insert([
-            'police_id' => 'BC11116',
-            'full_name' => 'Roshan Watawala',
-            'p_station' => 'Colombo',
-        ]);
-        DB::table('police_in_depts')->insert([
-            'police_id' => 'BC11117',
-            'full_name' => 'Saman Perera',
-            'p_station' => 'Kandy',
-        ]);
-        DB::table('police_in_depts')->insert([
-            'police_id' => 'BC11118',
-            'full_name' => 'Police 5',
-            'p_station' => 'Colombo',
-        ]);
-        DB::table('police_in_depts')->insert([
-            'police_id' => 'BC11119',
-            'full_name' => 'Police 6',
-            'p_station' => 'Colombo',
-        ]);
-        DB::table('police_in_depts')->insert([
-            'police_id' => 'BC11121',
-            'full_name' => 'Police 7',
-            'p_station' => 'Colombo',
-        ]);
-        DB::table('police_in_depts')->insert([
-            'police_id' => 'BC11122',
-            'full_name' => 'Police 8',
-            'p_station' => 'Colombo',
-        ]);
-        DB::table('police_in_depts')->insert([
-            'police_id' => 'BC11123',
-            'full_name' => 'Police 9',
-            'p_station' => 'Colombo',
-        ]);
-        DB::table('police_in_depts')->insert([
-            'police_id' => 'BC11124',
-            'full_name' => 'Police 10',
-            'p_station' => 'Colombo',
-        ]);
-        DB::table('police_in_depts')->insert([
-            'police_id' => '1011',
-            'full_name' => 'Police 11',
-        ]);
-        DB::table('police_in_depts')->insert([
-            'police_id' => '1012',
-            'full_name' => 'Police 12',
-        ]);
-        DB::table('police_in_depts')->insert([
-            'police_id' => '1013',
-            'full_name' => 'Police 13',
-        ]);
-        DB::table('police_in_depts')->insert([
-            'police_id' => '1014',
-            'full_name' => 'Police 14',
-        ]);
-        DB::table('police_in_depts')->insert([
-            'police_id' => '1015',
-            'full_name' => 'Police 15',
-        ]);
+        // ----------------------------
+        // Insert Police in Departments
+        // ----------------------------
+        $policeDepts = [
+            ['police_id' => 'BC11111', 'full_name' => 'Mohamed Azeem', 'p_station' => 'Kandy'],
+            ['police_id' => 'BC11112', 'full_name' => 'Sandali Shela', 'p_station' => 'Matara'],
+            ['police_id' => 'BC11113', 'full_name' => 'Rikaf Fasri', 'p_station' => 'Dehiwala'],
+            ['police_id' => 'BC11114', 'full_name' => 'Sarasi Perera', 'p_station' => 'Colombo'],
+            ['police_id' => 'BC11115', 'full_name' => 'Saman Kumara', 'p_station' => 'Kandy'],
+            ['police_id' => 'BC11116', 'full_name' => 'Roshan Watawala', 'p_station' => 'Colombo'],
+            ['police_id' => 'BC11117', 'full_name' => 'Saman Perera', 'p_station' => 'Kandy'],
+            ['police_id' => 'BC11118', 'full_name' => 'Police 5', 'p_station' => 'Colombo'],
+            ['police_id' => 'BC11119', 'full_name' => 'Police 6', 'p_station' => 'Colombo'],
+            ['police_id' => 'BC11121', 'full_name' => 'Police 7', 'p_station' => 'Colombo'],
+            ['police_id' => 'BC11122', 'full_name' => 'Police 8', 'p_station' => 'Colombo'],
+            ['police_id' => 'BC11123', 'full_name' => 'Police 9', 'p_station' => 'Colombo'],
+            ['police_id' => 'BC11124', 'full_name' => 'Police 10', 'p_station' => 'Colombo'],
+            ['police_id' => '1011', 'full_name' => 'Police 11'],
+            ['police_id' => '1012', 'full_name' => 'Police 12'],
+            ['police_id' => '1013', 'full_name' => 'Police 13'],
+            ['police_id' => '1014', 'full_name' => 'Police 14'],
+            ['police_id' => '1015', 'full_name' => 'Police 15'],
+        ];
 
-        DB::table('police_users')->insert([
-            'username' => 'superadmin1',
-            'password' => Hash::make('Password1@'),
-            'email' => 'superadmin1@email.com',
-            'email_verified_at' => now(),
-            'role_id' => Roles::where('name', 'admin')->first()->id,
-        ]);
-        DB::table('admins')->insert([
-            'police_user_id' => PoliceUser::where('username', 'superadmin1')->first()->id,
-            'police_in_dept_id' => PoliceInDept::where('police_id', '1111')->first()->id,
-            'is_super_admin' => true,
-        ]);
-        AccountCreationLog::create([
-            'created_by' => PoliceUser::where('username', 'superadmin1')->first()->id,
-            'created_for' => PoliceUser::where('username', 'superadmin1')->first()->id,
-        ]);
+        foreach ($policeDepts as $dept) {
+            DB::table('police_in_depts')->insert($dept);
+        }
 
-        DB::table('police_users')->insert([
-            'username' => 'admin1',
-            'password' => Hash::make('Password1@'),
-            'email' => 'admin1@email.com',
-            'email_verified_at' => now(),
-            'role_id' => Roles::where('name', 'admin')->first()->id,
-        ]);
-        DB::table('admins')->insert([
-            'police_user_id' => PoliceUser::where('username', 'admin1')->first()->id,
-            'police_in_dept_id' => PoliceInDept::where('police_id', '2222')->first()->id,
-            'is_super_admin' => false,
-        ]);
-        AccountCreationLog::create([
-            'created_by' => PoliceUser::where('username', 'superadmin1')->first()->id,
-            'created_for' => PoliceUser::where('username', 'admin1')->first()->id,
-        ]);
+        // ----------------------------
+        // Users
+        // ----------------------------
+        $users = [
+            // Super Admins
+            ['username' => 'azeem1', 'full_name' => 'Mohamed Azeem', 'email' => 'azeem1@email.com', 'role' => 'admin', 'super_admin' => true, 'police_id' => 'BC11111'],
+            ['username' => 'azeem2', 'full_name' => 'Mohamed Azeem 2', 'email' => 'azeem2@email.com', 'role' => 'admin', 'super_admin' => true, 'police_id' => '1011'],
 
-        DB::table('police_users')->insert([
-            'username' => 'admin2',
-            'password' => Hash::make('Password1@'),
-            'email' => 'admin2@email.com',
-            'email_verified_at' => now(),
-            'role_id' => Roles::where('name', 'admin')->first()->id,
-        ]);
-        DB::table('admins')->insert([
-            'police_user_id' => PoliceUser::where('username', 'admin2')->first()->id,
-            'police_in_dept_id' => PoliceInDept::where('police_id', '3333')->first()->id,
-            'is_super_admin' => false,
-        ]);
-        AccountCreationLog::create([
-            'created_by' => PoliceUser::where('username', 'superadmin1')->first()->id,
-            'created_for' => PoliceUser::where('username', 'admin2')->first()->id,
-        ]);
+            // Admins
+            ['username' => 'sandali1', 'full_name' => 'Sandali Shela', 'email' => 'sandali1@email.com', 'role' => 'admin', 'super_admin' => false, 'police_id' => 'BC11112'],
+            ['username' => 'sandali2', 'full_name' => 'Sandali Shela 2', 'email' => 'sandali2@email.com', 'role' => 'admin', 'super_admin' => false, 'police_id' => '1012'],
 
-        DB::table('police_users')->insert([
-            'username' => 'superadmin2',
-            'password' => Hash::make('Password1@'),
-            'email' => 'superadmin2@email.com',
-            'email_verified_at' => now(),
-            'role_id' => Roles::where('name', 'admin')->first()->id,
-        ]);
-        DB::table('admins')->insert([
-            'police_user_id' => PoliceUser::where('username', 'superadmin2')->first()->id,
-            'police_in_dept_id' => PoliceInDept::where('police_id', '4444')->first()->id,
-            'is_super_admin' => true,
-        ]);
-        AccountCreationLog::create([
-            'created_by' => PoliceUser::where('username', 'superadmin1')->first()->id,
-            'created_for' => PoliceUser::where('username', 'superadmin2')->first()->id,
-        ]);
+            // Higher Officers
+            ['username' => 'sarasi1', 'full_name' => 'Sarasi Perera', 'email' => 'sarasi1@email.com', 'role' => 'higher_officer', 'police_id' => 'BC11114'],
+            ['username' => 'sarasi2', 'full_name' => 'Sarasi Perera 2', 'email' => 'sarasi2@email.com', 'role' => 'higher_officer', 'police_id' => '1013'],
 
-        DB::table('police_users')->insert([
-            'username' => 'higherofficer1',
-            'password' => Hash::make('Password1@'),
-            'email' => 'higherofficer1@email.com',
-            'email_verified_at' => now(),
-            'role_id' => Roles::where('name', 'higher_officer')->first()->id,
-        ]);
-        DB::table('higher_police')->insert([
-            'police_user_id' => PoliceUser::where('username', 'higherofficer1')->first()->id,
-            'police_in_dept_id' => PoliceInDept::where('police_id', '5555')->first()->id,
-        ]);
-        AccountCreationLog::create([
-            'created_by' => PoliceUser::where('username', 'admin1')->first()->id,
-            'created_for' => PoliceUser::where('username', 'higherofficer1')->first()->id,
-        ]);
+            // Traffic Officers
+            ['username' => 'rikaf1', 'full_name' => 'Rikaf Fasri', 'email' => 'rikaf1@email.com', 'role' => 'traffic_officer', 'police_id' => 'BC11113'],
+            ['username' => 'rikaf2', 'full_name' => 'Rikaf Fasri 2', 'email' => 'rikaf2@email.com', 'role' => 'traffic_officer', 'police_id' => '1014'],
+        ];
 
-        DB::table('police_users')->insert([
-            'username' => 'higherofficer2',
-            'password' => Hash::make('Password1@'),
-            'email' => 'higherofficer2@email.com',
-            'email_verified_at' => now(),
-            'role_id' => Roles::where('name', 'higher_officer')->first()->id,
-        ]);
-        DB::table('higher_police')->insert([
-            'police_user_id' => PoliceUser::where('username', 'higherofficer2')->first()->id,
-            'police_in_dept_id' => PoliceInDept::where('police_id', '6666')->first()->id,
-        ]);
-        AccountCreationLog::create([
-            'created_by' => PoliceUser::where('username', 'admin1')->first()->id,
-            'created_for' => PoliceUser::where('username', 'higherofficer2')->first()->id,
-        ]);
+        foreach ($users as $user) {
+            // Insert into police_users
+            DB::table('police_users')->insert([
+                'username' => $user['username'],
+                'password' => Hash::make('Password1@'),
+                'email' => $user['email'],
+                'email_verified_at' => now(),
+                'role_id' => Roles::where('name', $user['role'])->first()->id,
+            ]);
 
-        DB::table('police_users')->insert([
-            'username' => 'trafficpolice1',
-            'password' => Hash::make('Password1@'),
-            'email' => 'trafficpolice1@email.com',
-            'email_verified_at' => now(),
-            'role_id' => Roles::where('name', 'traffic_officer')->first()->id,
-        ]);
-        DB::table('traffic_police')->insert([
-            'police_user_id' => PoliceUser::where('username', 'trafficpolice1')->first()->id,
-            'police_in_dept_id' => PoliceInDept::where('police_id', '7777')->first()->id,
-        ]);
-        DB::table('higher_traffic_police')->insert([
-            'higher_police_id' => '6666',
-            'traffic_police_id' => '7777',
-        ]);
-        DB::table('higher_traffic_police')->insert([
-            'higher_police_id' => '6666',
-            'traffic_police_id' => '1234',
-        ]);
-        DB::table('higher_traffic_police')->insert([
-            'higher_police_id' => '6666',
-            'traffic_police_id' => '1235',
-        ]);
-        DB::table('higher_traffic_police')->insert([
-            'higher_police_id' => '6666',
-            'traffic_police_id' => '1236',
-        ]);
-        AccountCreationLog::create([
-            'created_by' => PoliceUser::where('username', 'admin2')->first()->id,
-            'created_for' => PoliceUser::where('username', 'trafficpolice1')->first()->id,
-        ]);
+            $userId = PoliceUser::where('username', $user['username'])->first()->id;
+            $deptId = PoliceInDept::where('police_id', $user['police_id'])->first()->id;
 
-        DB::table('police_users')->insert([
-            'username' => 'trafficpolice2',
-            'password' => Hash::make('Password1@'),
-            'email' => 'trafficpolice2@email.com',
-            'email_verified_at' => now(),
-            'role_id' => Roles::where('name', 'traffic_officer')->first()->id,
-        ]);
-        DB::table('traffic_police')->insert([
-            'police_user_id' => PoliceUser::where('username', 'trafficpolice2')->first()->id,
-            'police_in_dept_id' => PoliceInDept::where('police_id', '8888')->first()->id,
-        ]);
-        DB::table('higher_traffic_police')->insert([
-            'higher_police_id' => '6666',
-            'traffic_police_id' => '8888',
-        ]);
-        AccountCreationLog::create([
-            'created_by' => PoliceUser::where('username', 'admin2')->first()->id,
-            'created_for' => PoliceUser::where('username', 'trafficpolice2')->first()->id,
-        ]);
+            if ($user['role'] === 'admin') {
+                DB::table('admins')->insert([
+                    'police_user_id' => $userId,
+                    'police_in_dept_id' => $deptId,
+                    'is_super_admin' => $user['super_admin'],
+                ]);
+            } elseif ($user['role'] === 'higher_officer') {
+                DB::table('higher_police')->insert([
+                    'police_user_id' => $userId,
+                    'police_in_dept_id' => $deptId,
+                ]);
+            } elseif ($user['role'] === 'traffic_officer') {
+                DB::table('traffic_police')->insert([
+                    'police_user_id' => $userId,
+                    'police_in_dept_id' => $deptId,
+                ]);
+            }
 
-        DB::table('police_users')->insert([
-            'username' => 'trafficpolice3',
-            'password' => Hash::make('Password1@'),
-            'email' => 'trafficpolice3@email.com',
-            'email_verified_at' => now(),
-            'role_id' => Roles::where('name', 'traffic_officer')->first()->id,
-        ]);
-        DB::table('traffic_police')->insert([
-            'police_user_id' => PoliceUser::where('username', 'trafficpolice3')->first()->id,
-            'police_in_dept_id' => PoliceInDept::where('police_id', '9999')->first()->id,
-        ]);
-        DB::table('higher_traffic_police')->insert([
-            'higher_police_id' => '5555',
-            'traffic_police_id' => '9999',
-        ]);
-        AccountCreationLog::create([
-            'created_by' => PoliceUser::where('username', 'admin1')->first()->id,
-            'created_for' => PoliceUser::where('username', 'trafficpolice3')->first()->id,
-        ]);
+            AccountCreationLog::create([
+                'created_by' => PoliceUser::where('username', 'azeem1')->first()->id, // assume azeem1 is creator
+                'created_for' => $userId,
+            ]);
+        }
+
+        // ----------------------------
+        // Higher-Traffic Mapping
+        // ----------------------------
+        $higherTrafficMapping = [
+            ['higher_police_id' => 'BC11114', 'traffic_police_id' => 'BC11113'], // sarasi1 -> rikaf1
+            ['higher_police_id' => '1013', 'traffic_police_id' => '1014'], // sarasi2 -> rikaf2
+        ];
+
+        foreach ($higherTrafficMapping as $map) {
+            DB::table('higher_traffic_police')->insert([
+                'higher_police_id' => $map['higher_police_id'],
+                'traffic_police_id' => $map['traffic_police_id'],
+            ]);
+        }
     }
 }

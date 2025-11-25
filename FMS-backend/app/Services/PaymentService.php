@@ -19,8 +19,6 @@ class PaymentService
     }
 
     public function processPaymentIntent(int $amount, array $metadata = [], string $currency = 'lkr')
-
-    public function processPaymentIntent(int $amount, array $metadata = [], string $currency = 'usd')
     {
         try {
             $paymentIntent = $this->stripeClient->paymentIntents->create([

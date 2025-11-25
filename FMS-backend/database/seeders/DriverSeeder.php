@@ -20,7 +20,7 @@ class DriverSeeder extends Seeder
     {
         DB::table('driver_in_depts')->insert([
             'license_no' => '1111',
-            'full_name' => 'Mohamed Azeem',
+            'full_name' => 'Sanjaya Perera',
             'email' => 'driver1@email.com',
             'licence_id_no' => 'BC112555',
         ]);
@@ -53,13 +53,13 @@ class DriverSeeder extends Seeder
 
         DB::table('driver_users')->insert([
             'driver_in_dept_id' => DriverInDept::where('license_no', '1111')->first()->id,
-            'username' => 'driver1',
+            'username' => 'sanjaya1',
             'password' => Hash::make('Password1@'),
             'email_verified_at' => now(),
         ]);
         DB::table('driver_users')->insert([
             'driver_in_dept_id' => DriverInDept::where('license_no', '2222')->first()->id,
-            'username' => 'driver2',
+            'username' => 'shela1',
             'password' => Hash::make('Password1@'),
             'email_verified_at' => now(),
         ]);
